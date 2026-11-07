@@ -136,4 +136,14 @@ python -m pytest
 ```
 
 En Windows se puede usar `py -m pytest`. Para ver el nombre de cada prueba:
-`python -m pytest -v`.
+`python -m pytest -v`. Resultado esperado: `14 passed`.
+
+### Pregunta nueva para el cliente
+
+- **P-12.** Si un medicamento tiene exactamente las cajas del mínimo (por ejemplo, 10 de 10),
+  ¿ya lo quiere ver en la lista por pedir? Por ahora no aparece, porque HU-05 dice «por
+  debajo del mínimo».
+
+### Uso de IA
+
+El detalle de qué sugerencias acepté, ajusté o rechacé está en [bitacora_ia.md](bitacora_ia.md).
