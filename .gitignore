@@ -1,0 +1,15 @@
+# Entorno y secretos (nunca se suben)
+.env
+.env.*
+*.sqlite3
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Editor
+.vscode/
