@@ -1,0 +1,18 @@
+[project]
+name = "inventario-drogueria"
+version = "0.2.0"
+description = "Inventario de una droguería de barrio con control de lotes y fechas de vencimiento"
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+# E estilo, F errores, B errores probables, S seguridad (reglas de bandit)
+select = ["E", "F", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+# S101: assert es la forma normal de comprobar en pytest; las pruebas no se
+# ejecutan con python -O, así que los assert no se eliminan.
+"tests/*" = ["S101"]
