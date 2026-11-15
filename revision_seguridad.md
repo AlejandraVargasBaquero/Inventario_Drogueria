@@ -9,7 +9,7 @@ Correcciones: rama `agente/revision-semana6`, integrada a `main` después de rev
 ## 1. Herramientas y criterios
 
 - **Linter:** ruff 0.16.9 con las reglas E, F, B y S. Configuración en `pyproject.toml`. Antes no había configuración (H-05).
-- **Auditoría de dependencias:** pip-audit sobre `requirements.txt`. Resultado: **[COMPLETAR con la última línea de la captura C05]**.
+- **Auditoría de dependencias:** pip-audit sobre `requirements.txt`. Resultado: pip-audit 2.10.1, sin vulnerabilidades conocidas («No known vulnerabilities found», captura C05).
 - **Lista de revisión:** la de la semana 6: corrección (historia y casos límite), diseño (ADR-001), legibilidad, pruebas (normales, límite, error y abuso) y seguridad (datos, claves, permisos y dependencias).
 - **Revisión con IA:** Claude (chat), con el prompt de revisión de la semana (sección 3).
 - **Capas:** pruebas automatizadas, linter, revisión con criterios, revisión de seguridad y revisión con IA. Ninguna capa encuentra todo: el linter no vio ningún problema de lógica y la IA no vio los dos problemas de configuración (sección 3).
@@ -80,8 +80,6 @@ Todas las pruebas pasan: de 14 se pasó a 23 (`python -m pytest -v`, captura C04
 
 **Anexo A. Práctica de clase (código `codigo_practica_s6/tienda.py`).** Ejercicio guiado de la sesión de la semana 6, antes de revisar mi proyecto. Corrí `python -m ruff check --select E,F,B,S .` (12 avisos, 2 corregibles automáticamente, como `== None` en lugar de `is None`) y le pedí a Copilot una revisión con el mismo prompt. Copilot confirmó: consulta SQL armada con el nombre en la línea 17 (alta, corregida con parámetros y prueba de inyección), `cambiar_precio` sin verificar el rol (alta, corregida con `PermissionError` y prueba del vendedor), contraseñas con MD5 sin sal en la línea 22 (media, pendiente: scrypt o pbkdf2_hmac) y `carrito=[]` mutable en la línea 32. En el código también se ve `CLAVE_RESPALDO = "sk-tienda-…"` escrita en la línea 4: una clave en el código que habría que mover a una variable de entorno y cambiar. Esa práctica es la base de la lista que apliqué en las secciones 1 a 4.
 
-![Práctica de clase: ruff y revisión de Copilot sobre tienda.py](docs/evidencias/anexo_a_clase_codigo_practica_s6.png)
-
 **Anexo B. Evidencias de mi proyecto**
 
 | Captura | Qué muestra |
@@ -89,6 +87,7 @@ Todas las pruebas pasan: de 14 se pasó a 23 (`python -m pytest -v`, captura C04
 | ![C01](docs/evidencias/C01_ruff_antes.png) | C01. ruff en el commit revisado: solo S101 en las pruebas |
 | ![C02](docs/evidencias/C02_env_example_ignorado.png) | C02. `git check-ignore -v .env.example` en el commit revisado (H-01) |
 | ![C03](docs/evidencias/C03_diff_agente.png) | C03. Revisión del diff de la rama del agente antes de integrarla |
+| ![C03b](docs/evidencias/C03b_diff_pedidos.png) | C03b. Diff de `app/reglas/pedidos.py` |
 | ![C04](docs/evidencias/C04_pytest_despues.png) | C04. `python -m pytest -v`: 23 passed |
 | ![C05](docs/evidencias/C05_pip_audit.png) | C05. `pip-audit -r requirements.txt` |
 | ![C06](docs/evidencias/C06_ruff_despues.png) | C06. ruff después de las correcciones: All checks passed! |
