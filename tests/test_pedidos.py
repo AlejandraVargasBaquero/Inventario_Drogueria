@@ -134,3 +134,23 @@ def test_lote_de_medicamento_no_registrado_lanza_error():
 
     with pytest.raises(ValueError, match="no registrado"):
         productos_por_pedir([ACETAMINOFEN], [lote_huerfano], HOY)
+
+
+# ---------- Pruebas de abuso: datos mal formados (semana 6) ----------
+
+@pytest.mark.parametrize("minimo", ["10", 2.5, True, None])
+def test_minimo_que_no_es_entero_lanza_error_claro(minimo):
+    """Un mínimo escrito como texto, decimal o booleano no se acepta en silencio."""
+    medicamento = Medicamento(8, "Omeprazol 20 mg", minimo)
+
+    with pytest.raises(ValueError, match="El mínimo debe ser un número entero"):
+        productos_por_pedir([medicamento], [], HOY)
+
+
+@pytest.mark.parametrize("cantidad", ["5", 2.5, False, None])
+def test_cantidad_de_lote_que_no_es_entera_lanza_error(cantidad):
+    lote = Lote(1, "L-0002", date(2027, 1, 1), cantidad)
+
+    with pytest.raises(ValueError, match="L-0002 tiene una cantidad que no es entera"):
+        productos_por_pedir([ACETAMINOFEN], [lote], HOY)
+

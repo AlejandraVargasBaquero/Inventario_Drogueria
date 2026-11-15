@@ -5,6 +5,7 @@ from datetime import date
 from app.reglas.modelos import Lote, Medicamento, ProductoPorPedir
 
 MENSAJE_MINIMO_INVALIDO = "El mínimo debe ser un número igual o mayor que cero"
+MENSAJE_MINIMO_NO_ENTERO = "El mínimo debe ser un número entero de cajas"
 
 
 def productos_por_pedir(
@@ -37,8 +38,15 @@ def productos_por_pedir(
     return sorted(por_pedir, key=lambda producto: producto.vigentes)
 
 
+def _es_entero(valor: object) -> bool:
+    """bool es subclase de int en Python, así que True y False se excluyen aparte."""
+    return isinstance(valor, int) and not isinstance(valor, bool)
+
+
 def _validar_minimos(medicamentos: list[Medicamento]) -> None:
     for medicamento in medicamentos:
+        if not _es_entero(medicamento.stock_minimo):
+            raise ValueError(MENSAJE_MINIMO_NO_ENTERO)
         if medicamento.stock_minimo < 0:
             raise ValueError(MENSAJE_MINIMO_INVALIDO)
 
@@ -49,6 +57,10 @@ def _cajas_vigentes_por_medicamento(
     """Suma las cajas de los lotes que no han vencido (un lote que vence hoy cuenta)."""
     vigentes: dict[int, int] = {}
     for lote in lotes:
+        if not _es_entero(lote.cantidad_actual):
+            raise ValueError(
+                f"El lote {lote.numero_lote} tiene una cantidad que no es entera"
+            )
         if lote.cantidad_actual < 0:
             raise ValueError(f"El lote {lote.numero_lote} tiene una cantidad negativa")
         if lote.medicamento_id not in ids_registrados:
