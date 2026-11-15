@@ -154,3 +154,10 @@ def test_cantidad_de_lote_que_no_es_entera_lanza_error(cantidad):
     with pytest.raises(ValueError, match="L-0002 tiene una cantidad que no es entera"):
         productos_por_pedir([ACETAMINOFEN], [lote], HOY)
 
+
+def test_medicamento_con_id_repetido_lanza_error():
+    """Dos medicamentos con el mismo id harían que sus lotes se cuenten dos veces."""
+    copia = Medicamento(1, "Acetaminofén 500 mg (copia)", 10)
+
+    with pytest.raises(ValueError, match="id 1 está repetido"):
+        productos_por_pedir([ACETAMINOFEN, copia], [L_0627], HOY)

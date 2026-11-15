@@ -44,7 +44,11 @@ def _es_entero(valor: object) -> bool:
 
 
 def _validar_minimos(medicamentos: list[Medicamento]) -> None:
+    ids_vistos: set[int] = set()
     for medicamento in medicamentos:
+        if medicamento.id in ids_vistos:
+            raise ValueError(f"El medicamento con id {medicamento.id} está repetido")
+        ids_vistos.add(medicamento.id)
         if not _es_entero(medicamento.stock_minimo):
             raise ValueError(MENSAJE_MINIMO_NO_ENTERO)
         if medicamento.stock_minimo < 0:
