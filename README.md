@@ -1,39 +1,112 @@
 # Sistema de inventario de la Droguería San Rafael
 
+## 1. Qué es
+
 Sistema de inventario para una droguería de barrio en Neiva, con control de lotes y
-fechas de vencimiento. Proyecto final del Seminario de Inteligencia Artificial Aplicada
-al Ciclo de Vida del Software (FET, 2026).
+fechas de vencimiento. Le avisa al dueño qué medicamentos están por debajo del mínimo
+contando solo las cajas de lotes que no han vencido. Proyecto final del Seminario de
+Inteligencia Artificial Aplicada al Ciclo de Vida del Software (FET, 2026). Los nombres
+del cliente y del negocio son ficticios.
 
-- Estudiante: Alejandra Vargas Baquero
-- Docente: Jorge Luis Trujillo
-- Documentos base: requisitos (semana 3) y diseño (semana 4, ADR-001 y ADR-002).
-  Los nombres del cliente y del negocio son ficticios.
+Documentos base: requisitos (semana 3) y diseño (semana 4, ADR-001 y ADR-002).
+Funcionalidad implementada: HU-05 «Productos bajo el mínimo» (ver la sección 9).
 
-## Estructura
+## 2. Requisitos
+
+- Python 3.10 o superior (desarrollado con Python 3.13).
+- Git.
+- Dependencias con versión fijada en `requirements.txt`: `pytest==9.1.1` (pruebas) y
+  `ruff==0.16.9` (linter). La capa de reglas solo usa la librería estándar (ADR-001).
+
+## 3. Instalación
+
+```bash
+git clone https://github.com/AlejandraVargasBaquero/Inventario_Drogueria.git
+cd Inventario_Drogueria
+python -m venv .venv
+.venv\Scripts\activate          # Windows (PowerShell)
+# source .venv/bin/activate       # Linux o macOS
+python -m pip install -r requirements.txt
+```
+
+Cuando existan la capa web y la de datos, copia `.env.example` como `.env` y pon tus
+valores. El archivo `.env` nunca se sube (está en `.gitignore`).
+
+## 4. Ejecución
+
+Por ahora solo existe la capa de reglas. Para ver HU-05 con los datos del documento de
+requisitos (hoy = 24/10/2026):
+
+```bash
+python -m app
+```
+
+Salida esperada:
+
+```
+Productos por pedir al 24/10/2026:
+- Ibuprofeno 400 mg: 2 de 5 cajas
+- Acetaminofén 500 mg: 3 de 10 cajas
+- Amoxicilina 500 mg: 8 de 10 cajas
+```
+
+## 5. Pruebas y calidad
+
+```bash
+python -m pytest -v                          # resultado esperado: 23 passed
+python -m ruff check --select E,F,B,S .      # resultado esperado: All checks passed!
+pip-audit -r requirements.txt                # auditoría de dependencias
+```
+
+La configuración de ruff está en `pyproject.toml`. El informe de la revisión de código y
+seguridad de la semana 6 está en [revision_seguridad.md](revision_seguridad.md).
+
+## 6. Estructura
 
 La estructura sigue el ADR-001 (aplicación local en capas: interfaz, reglas de
-inventario y acceso a datos). Esta semana solo existe la capa de reglas, que no
-depende de Flask ni de SQLite y por eso se puede probar sola.
+inventario y acceso a datos). Por ahora solo existe la capa de reglas, que no depende de
+Flask ni de SQLite y por eso se puede probar sola.
 
 ```
 inventario-drogueria/
 ├── app/
 │   ├── __init__.py
+│   ├── __main__.py            # Demostración: python -m app
 │   └── reglas/                # Capa de reglas de inventario
 │       ├── __init__.py
 │       ├── modelos.py         # Medicamento, Lote y ProductoPorPedir
 │       └── pedidos.py         # productos_por_pedir (HU-05)
 ├── tests/
-│   └── test_pedidos.py        # Pruebas de HU-05
+│   └── test_pedidos.py        # Pruebas de HU-05 (normales, límite, error y abuso)
+├── docs/evidencias/           # Capturas de la revisión de la semana 6
+├── .env.example               # Plantilla de variables de entorno (sin valores reales)
 ├── bitacora_ia.md             # Bitácora de uso de IA
+├── revision_seguridad.md      # Informe de revisión de código y seguridad
+├── pyproject.toml             # Configuración de ruff
 ├── pytest.ini
 ├── requirements.txt
 └── README.md
 ```
 
-## Funcionalidad de la semana 5
+## 7. Uso de IA
 
-### Historia de usuario
+Usé GitHub Copilot, Gemini y Claude para escribir, revisar y refactorizar código. Cada
+sugerencia se verificó con las pruebas antes de aceptarla. El detalle de qué acepté,
+ajusté o rechacé está en [bitacora_ia.md](bitacora_ia.md). En la semana 6, Claude
+trabajó como agente en la rama `agente/revision-semana6` y yo revisé el diff antes de
+integrarlo a `main`.
+
+## 8. Autora y licencia
+
+- Autora: Alejandra Vargas Baquero.
+- Docente: Jorge Luis Trujillo. Fundación Escuela Tecnológica de Neiva (FET), 2026.
+- Licencia: proyecto académico, todos los derechos reservados.
+
+## 9. Funcionalidades
+
+### HU-05 (semana 5)
+
+#### Historia de usuario
 
 **HU-05. Productos bajo el mínimo** (prioridad Must).
 Como dueño de la droguería, quiero ver los medicamentos cuya cantidad vigente está por
@@ -50,7 +123,7 @@ Criterios de aceptación:
   ibuprofeno de 400 mg, cuando escribo −2, entonces el sistema no lo guarda y muestra
   «El mínimo debe ser un número igual o mayor que cero».
 
-### Contrato de la función
+#### Contrato de la función
 
 **Firma**
 
@@ -114,6 +187,9 @@ listas recibidas.
 | Un medicamento tiene mínimo negativo | «El mínimo debe ser un número igual o mayor que cero» |
 | Un lote tiene cantidad negativa | «El lote L-xxxx tiene una cantidad negativa» |
 | Un lote es de un medicamento que no está en la lista | «El lote L-xxxx es de un medicamento no registrado» |
+| Un mínimo no es un entero (texto, decimal o booleano) — semana 6 | «El mínimo debe ser un número entero de cajas» |
+| Una cantidad de lote no es un entero — semana 6 | «El lote L-xxxx tiene una cantidad que no es entera» |
+| Dos medicamentos tienen el mismo id — semana 6 | «El medicamento con id N está repetido» |
 
 **Ejemplos** (hoy = 24/10/2026, los mismos datos del documento de requisitos)
 
@@ -126,24 +202,8 @@ listas recibidas.
 | 5 | `[]` | `[]` |
 | 6 | Ibuprofeno con mínimo −2 (error) | `ValueError`: «El mínimo debe ser un número igual o mayor que cero» |
 
-### Cómo ejecutar las pruebas
-
-Requiere Python 3.10 o superior.
-
-```bash
-python -m pip install -r requirements.txt
-python -m pytest
-```
-
-En Windows se puede usar `py -m pytest`. Para ver el nombre de cada prueba:
-`python -m pytest -v`. Resultado esperado: `14 passed`.
-
-### Pregunta nueva para el cliente
+#### Pregunta nueva para el cliente
 
 - **P-12.** Si un medicamento tiene exactamente las cajas del mínimo (por ejemplo, 10 de 10),
   ¿ya lo quiere ver en la lista por pedir? Por ahora no aparece, porque HU-05 dice «por
   debajo del mínimo».
-
-### Uso de IA
-
-El detalle de qué sugerencias acepté, ajusté o rechacé está en [bitacora_ia.md](bitacora_ia.md).
