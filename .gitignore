@@ -1,6 +1,7 @@
 # Entorno y secretos (nunca se suben)
 .env
 .env.*
+!.env.example
 *.sqlite3
 *.db
 
