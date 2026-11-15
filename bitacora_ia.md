@@ -2,8 +2,8 @@
 
 Proyecto: Sistema de inventario para una droguería de barrio, con control de lotes y fechas de vencimiento
 Estudiante: Alejandra Vargas Baquero
-Funcionalidad: HU-05 Productos bajo el mínimo (`productos_por_pedir`)
-Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de clase; Gemini (chat) para explicar y revisar el código de clase; Claude (chat) para la implementación y el refactor del proyecto.
+Funcionalidad: HU-05 Productos bajo el mínimo (`productos_por_pedir`). Semana 6: revisión de código y seguridad.
+Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de clase; Gemini (chat) para explicar y revisar el código de clase; Claude (chat) para la implementación y el refactor del proyecto. En la semana 6, Claude como revisor (chat) y como agente en la rama `agente/revision-semana6`.
 
 > Parto del taller de clase, como lo permite la tarea: allí Copilot escribió las pruebas y la
 > implementación de `productos_por_pedir` para la tienda del OVA 1. Las capturas están en el
@@ -74,13 +74,51 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Verificación:** `python -m pytest`: 14 passed. `git diff -- tests` vacío: las pruebas no se modificaron.
 - **Commit relacionado:** `Refactor de productos_por_pedir sin cambiar comportamiento`.
 
+## Entradas de la semana 6
+
+### Entrada 8
+
+- **Fecha:** 2026-11-14
+- **Prompt o sugerencia:** Segunda revisión con IA (Claude) con el prompt de la semana: «Actúa como revisor de código Python con experiencia en seguridad. Módulo: capa de reglas del inventario de una droguería [...]. Criterios: corrección y casos límite, diseño, legibilidad, pruebas y seguridad. Formato: tabla con archivo, línea, problema, severidad y confianza. No reescribas todo el código: separa los problemas seguros de las sospechas que habría que verificar.» Le pasé `pedidos.py`, `modelos.py` y `test_pedidos.py`.
+- **Decisión:** Aceptada con cambios
+- **Por qué:** De 6 hallazgos, 2 eran reales (tipos sin validar e ids repetidos), 1 es real pero queda pendiente (fechas `datetime`) y 3 eran falsos positivos (`sorted` inestable, XSS en una capa que no genera HTML y S101 en las pruebas). La IA no vio que `.gitignore` ignoraba `.env.example` ni que `pytest` no tenía versión fijada, porque esos archivos no estaban en el prompt; los encontré con la lista de la semana.
+- **Verificación:** Comprobé cada hallazgo llamando a la función con los datos del caso (`"10"` lanzó `TypeError`; `True` devolvió «0 de True cajas»), con la documentación de `sorted` y con la prueba de empate. La tabla está en la sección 3 de `revision_seguridad.md`.
+- **Commit relacionado:** `12426f4` y `d69f877`.
+
+### Entrada 9
+
+- **Fecha:** 2026-11-14
+- **Prompt o sugerencia:** Agente (Claude) con una instrucción delimitada. **Rol:** agente que trabaja en la rama `agente/revision-semana6`. **Contexto:** capa de reglas del inventario, ADR-001, contrato de HU-05 en el README. **Tarea:** corregir los hallazgos reales de la revisión, un commit por corrección, configurar ruff, completar los docstrings y el README con las 8 secciones. **Formato:** al terminar, lista de commits, pruebas agregadas y resultado de pytest y ruff. **Restricciones:** no modificar las pruebas existentes (solo agregar), solo librería estándar en `app/`, no instalar paquetes, no tocar `main`.
+- **Decisión:** Aceptada después de revisar el diff
+- **Por qué:** Hizo 8 commits pequeños, cada uno con un mensaje que dice qué corrige. Revisé que las validaciones nuevas tuvieran sus pruebas y que el refactor (`2298b6a`) no cambiara el comportamiento.
+- **Verificación:** `git diff main...agente/revision-semana6` revisado archivo por archivo; `git diff c89a877 -- tests` solo tiene líneas agregadas; `python -m pytest`: 23 passed; `ruff check --select E,F,B,S .`: All checks passed! Integré la rama a `main` solo con las pruebas en verde.
+- **Commit relacionado:** del `8fa6ac0` al `c065254`.
+
+### Entrada 10
+
+- **Fecha:** 2026-11-14
+- **Prompt o sugerencia:** Corrección de H-03: validar con `isinstance(valor, int)` que el mínimo y la cantidad sean enteros.
+- **Decisión:** Aceptada con cambios
+- **Por qué:** `isinstance(True, int)` es `True` en Python porque `bool` es subclase de `int`, así que con eso solo un mínimo `True` seguía pasando. Se agregó `_es_entero`, que excluye los booleanos. Como la corrección cambia el comportamiento (antes `"10"` daba `TypeError` y ahora `ValueError` con mensaje), agregué pruebas nuevas en vez de cambiar las que existían.
+- **Verificación:** Escribí primero las pruebas parametrizadas con `"10"`, `2.5`, `True` y `None`: fallaron (en rojo). Después de la corrección pasaron todas.
+- **Commit relacionado:** `12426f4`.
+
+### Entrada 11
+
+- **Fecha:** 2026-11-14
+- **Prompt o sugerencia:** La IA sugirió validar también que `fecha_vencimiento` sea `date` y no `datetime`, en la misma rama.
+- **Decisión:** Rechazada por ahora
+- **Por qué:** Es real (comparar un `datetime` con un `date` lanza `TypeError`), pero hoy las fechas solo las crea el código. Cuando llegue la capa de datos, las fechas vendrán de SQLite como texto y la conversión se hará allí. Hacerlo ahora sería decidir sin saber cómo se guardarán. Queda en Pendientes del informe.
+- **Verificación:** Reproduje el error con `Lote(1, "L", datetime(2027, 1, 1), 3)`.
+- **Commit relacionado:** Ninguno (pendiente).
+
 ## Resumen
 
 | Decisión | Cantidad |
 |---|---|
-| Aceptadas | 3 (entradas 4, 5 y 7) |
-| Aceptadas con cambios | 2 (entradas 3 y 6) |
-| Rechazadas | 2 (entradas 1 y 2) |
+| Aceptadas | 4 (entradas 4, 5, 7 y 9) |
+| Aceptadas con cambios | 4 (entradas 3, 6, 8 y 10) |
+| Rechazadas | 3 (entradas 1, 2 y 11) |
 
 ## Errores que atraparon las pruebas
 
