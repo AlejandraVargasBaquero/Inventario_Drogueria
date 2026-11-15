@@ -3,7 +3,7 @@
 Proyecto: Sistema de inventario para una droguería de barrio, con control de lotes y fechas de vencimiento
 Estudiante: Alejandra Vargas Baquero
 Fecha: 2026-11-14
-Commit revisado: `c89a877` (rama `main`, entrega de la semana 5)
+Commit revisado: `d1110d4` (rama `main`, entrega de la semana 5)
 Correcciones: rama `agente/revision-semana6`, integrada a `main` después de revisar el diff
 
 ## 1. Herramientas y criterios
@@ -26,21 +26,21 @@ Correcciones: rama `agente/revision-semana6`, integrada a `main` después de rev
 
 ## 2. Tabla de hallazgos
 
-Las líneas corresponden al commit revisado `c89a877`.
+Las líneas corresponden al commit revisado `d1110d4`.
 
 | Id | Archivo y línea | Problema | Categoría (OWASP 2021 o tipo) | Severidad | Corrección | Commit |
 |---|---|---|---|---|---|---|
-| H-01 | .gitignore:3 | `.env.*` también ignoraba `.env.example` (`git check-ignore -v .env.example` lo confirma), así que la plantilla nunca se habría subido | A05 Configuración insegura | Media | Excepción `!.env.example` y plantilla sin valores reales | `d20d2ba` |
-| H-02 | requirements.txt:1 | `pytest>=8.0` sin versión fijada: una instalación futura puede traer otra versión | A06 Componentes vulnerables y desactualizados | Media | `pytest==9.1.1` y `ruff==0.16.9` | `e95a8bf` |
-| H-03 | app/reglas/pedidos.py:42 y 52 | No se valida el tipo del mínimo ni de la cantidad: `"10"` lanza un `TypeError` sin mensaje para el usuario, y `True` o `2.5` se aceptan en silencio («0 de True cajas») | A04 Diseño inseguro, CWE-20 Validación de entradas | Media | `_es_entero` y `ValueError` con mensaje claro; 8 pruebas de abuso parametrizadas | `12426f4` |
-| H-04 | app/reglas/pedidos.py:22 y 26 | Dos medicamentos con el mismo id salen dos veces en la lista y sus lotes cuentan para ambos | CWE-20 Integridad de datos | Media | `ValueError` «El medicamento con id N está repetido» y una prueba nueva | `d69f877` |
-| H-05 | (no existía) pyproject.toml | Linter sin configurar en el proyecto | Configuración y calidad | Baja | `[tool.ruff.lint]` con E, F, B y S | `8fa6ac0` |
-| H-06 | app/reglas/pedidos.py:40–62 | Mensajes de los lotes escritos dentro del código, `_validar_minimos` ya no describía lo que hace y los docstrings no decían qué reciben, qué devuelven ni qué errores lanzan | Mantenibilidad | Baja | Constantes de mensajes, `_validar_medicamentos` y docstrings completos | `2298b6a` |
-| H-07 | README.md | Faltaban secciones (requisitos, instalación, ejecución, autora y licencia) y no había forma de ejecutar el proyecto | Documentación | Baja | README con las 8 secciones y `python -m app` | `b71e6b4`, `c065254` |
+| H-01 | .gitignore:3 | `.env.*` también ignoraba `.env.example` (`git check-ignore -v .env.example` lo confirma), así que la plantilla nunca se habría subido | A05 Configuración insegura | Media | Excepción `!.env.example` y plantilla sin valores reales | `3d168dc` |
+| H-02 | requirements.txt:1 | `pytest>=8.0` sin versión fijada: una instalación futura puede traer otra versión | A06 Componentes vulnerables y desactualizados | Media | `pytest==9.1.1` y `ruff==0.16.9` | `bceed93` |
+| H-03 | app/reglas/pedidos.py:42 y 52 | No se valida el tipo del mínimo ni de la cantidad: `"10"` lanza un `TypeError` sin mensaje para el usuario, y `True` o `2.5` se aceptan en silencio («0 de True cajas») | A04 Diseño inseguro, CWE-20 Validación de entradas | Media | `_es_entero` y `ValueError` con mensaje claro; 8 pruebas de abuso parametrizadas | `ead80c7` |
+| H-04 | app/reglas/pedidos.py:22 y 26 | Dos medicamentos con el mismo id salen dos veces en la lista y sus lotes cuentan para ambos | CWE-20 Integridad de datos | Media | `ValueError` «El medicamento con id N está repetido» y una prueba nueva | `2cf950c` |
+| H-05 | (no existía) pyproject.toml | Linter sin configurar en el proyecto | Configuración y calidad | Baja | `[tool.ruff.lint]` con E, F, B y S | `56374bc` |
+| H-06 | app/reglas/pedidos.py:40–62 | Mensajes de los lotes escritos dentro del código, `_validar_minimos` ya no describía lo que hace y los docstrings no decían qué reciben, qué devuelven ni qué errores lanzan | Mantenibilidad | Baja | Constantes de mensajes, `_validar_medicamentos` y docstrings completos | `f27c7d8` |
+| H-07 | README.md | Faltaban secciones (requisitos, instalación, ejecución, autora y licencia) y no había forma de ejecutar el proyecto | Documentación | Baja | README con las 8 secciones y `python -m app` | `a124e60`, `973133c` |
 
 **Severidad:** alta (permite acceder o cambiar datos sin permiso, o expone secretos), media (error probable o riesgo con condiciones), baja (estilo o mantenibilidad).
 
-Todas las pruebas pasan: de 14 se pasó a 23 (`python -m pytest -v`, captura C04). Ninguna prueba existente se modificó: `git diff c89a877 -- tests` solo muestra líneas agregadas.
+Todas las pruebas pasan: de 14 se pasó a 23 (`python -m pytest -v`, captura C04). Ninguna prueba existente se modificó: `git diff d1110d4 -- tests` solo muestra líneas agregadas.
 
 ### Avisos del linter no corregidos
 

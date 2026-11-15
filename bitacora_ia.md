@@ -83,16 +83,16 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Decisión:** Aceptada con cambios
 - **Por qué:** De 6 hallazgos, 2 eran reales (tipos sin validar e ids repetidos), 1 es real pero queda pendiente (fechas `datetime`) y 3 eran falsos positivos (`sorted` inestable, XSS en una capa que no genera HTML y S101 en las pruebas). La IA no vio que `.gitignore` ignoraba `.env.example` ni que `pytest` no tenía versión fijada, porque esos archivos no estaban en el prompt; los encontré con la lista de la semana.
 - **Verificación:** Comprobé cada hallazgo llamando a la función con los datos del caso (`"10"` lanzó `TypeError`; `True` devolvió «0 de True cajas»), con la documentación de `sorted` y con la prueba de empate. La tabla está en la sección 3 de `revision_seguridad.md`.
-- **Commit relacionado:** `12426f4` y `d69f877`.
+- **Commit relacionado:** `ead80c7` y `2cf950c`.
 
 ### Entrada 9
 
 - **Fecha:** 2026-11-14
 - **Prompt o sugerencia:** Agente (Claude) con una instrucción delimitada. **Rol:** agente que trabaja en la rama `agente/revision-semana6`. **Contexto:** capa de reglas del inventario, ADR-001, contrato de HU-05 en el README. **Tarea:** corregir los hallazgos reales de la revisión, un commit por corrección, configurar ruff, completar los docstrings y el README con las 8 secciones. **Formato:** al terminar, lista de commits, pruebas agregadas y resultado de pytest y ruff. **Restricciones:** no modificar las pruebas existentes (solo agregar), solo librería estándar en `app/`, no instalar paquetes, no tocar `main`.
 - **Decisión:** Aceptada después de revisar el diff
-- **Por qué:** Hizo 8 commits pequeños, cada uno con un mensaje que dice qué corrige. Revisé que las validaciones nuevas tuvieran sus pruebas y que el refactor (`2298b6a`) no cambiara el comportamiento.
-- **Verificación:** `git diff main...agente/revision-semana6` revisado archivo por archivo; `git diff c89a877 -- tests` solo tiene líneas agregadas; `python -m pytest`: 23 passed; `ruff check --select E,F,B,S .`: All checks passed! Integré la rama a `main` solo con las pruebas en verde.
-- **Commit relacionado:** del `8fa6ac0` al `c065254`.
+- **Por qué:** Hizo 8 commits pequeños, cada uno con un mensaje que dice qué corrige. Revisé que las validaciones nuevas tuvieran sus pruebas y que el refactor (`f27c7d8`) no cambiara el comportamiento.
+- **Verificación:** `git diff main...agente/revision-semana6` revisado archivo por archivo; `git diff d1110d4 -- tests` solo tiene líneas agregadas; `python -m pytest`: 23 passed; `ruff check --select E,F,B,S .`: All checks passed! Integré la rama a `main` solo con las pruebas en verde.
+- **Commit relacionado:** del `56374bc` al `973133c`.
 
 ### Entrada 10
 
@@ -101,7 +101,7 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Decisión:** Aceptada con cambios
 - **Por qué:** `isinstance(True, int)` es `True` en Python porque `bool` es subclase de `int`, así que con eso solo un mínimo `True` seguía pasando. Se agregó `_es_entero`, que excluye los booleanos. Como la corrección cambia el comportamiento (antes `"10"` daba `TypeError` y ahora `ValueError` con mensaje), agregué pruebas nuevas en vez de cambiar las que existían.
 - **Verificación:** Escribí primero las pruebas parametrizadas con `"10"`, `2.5`, `True` y `None`: fallaron (en rojo). Después de la corrección pasaron todas.
-- **Commit relacionado:** `12426f4`.
+- **Commit relacionado:** `ead80c7`.
 
 ### Entrada 11
 
