@@ -53,13 +53,15 @@ Productos por pedir al 24/10/2026:
 ## 5. Pruebas y calidad
 
 ```bash
-python -m pytest -v                          # resultado esperado: 23 passed
+python -m pytest -v                          # resultado esperado: 70 passed
 python -m ruff check --select E,F,B,S .      # resultado esperado: All checks passed!
 pip-audit -r requirements.txt                # auditoría de dependencias
 ```
 
 La configuración de ruff está en `pyproject.toml`. El informe de la revisión de código y
-seguridad de la semana 6 está en [revision_seguridad.md](revision_seguridad.md).
+seguridad de la semana 6 está en [revision_seguridad.md](revision_seguridad.md). Las tablas
+de casos, la revisión de las pruebas de la IA y el resultado de romper el código
+(semana 7) están en [registro_pruebas.md](registro_pruebas.md).
 
 ## 6. Estructura
 
@@ -74,13 +76,20 @@ inventario-drogueria/
 │   ├── __main__.py            # Demostración: python -m app
 │   └── reglas/                # Capa de reglas de inventario
 │       ├── __init__.py
+│       ├── existencias.py     # validar_minimo, cajas_vigentes y es_vigente (semana 7)
 │       ├── modelos.py         # Medicamento, Lote y ProductoPorPedir
 │       └── pedidos.py         # productos_por_pedir (HU-05)
 ├── tests/
-│   └── test_pedidos.py        # Pruebas de HU-05 (normales, límite, error y abuso)
+│   ├── conftest.py            # Datos sintéticos en fixtures (semana 7)
+│   ├── test_pedidos.py        # Pruebas de HU-05 (normales, límite, error y abuso)
+│   ├── test_validar_minimo.py # Particiones y límites del mínimo (semana 7)
+│   ├── test_cajas_vigentes.py # Particiones y límites de las cajas vigentes (semana 7)
+│   ├── test_decision_pedidos.py # Tabla de decisión de productos_por_pedir (semana 7)
+│   └── test_datos_sinteticos.py # Pruebas con los datos sintéticos (semana 7)
 ├── docs/evidencias/           # Capturas de la revisión de la semana 6
 ├── .env.example               # Plantilla de variables de entorno (sin valores reales)
 ├── bitacora_ia.md             # Bitácora de uso de IA
+├── registro_pruebas.md        # Tablas de casos y revisión de las pruebas (semana 7)
 ├── revision_seguridad.md      # Informe de revisión de código y seguridad
 ├── pyproject.toml             # Configuración de ruff
 ├── pytest.ini
@@ -94,7 +103,9 @@ Usé GitHub Copilot, Gemini y Claude para escribir, revisar y refactorizar códi
 sugerencia se verificó con las pruebas antes de aceptarla. El detalle de qué acepté,
 ajusté o rechacé está en [bitacora_ia.md](bitacora_ia.md). En la semana 6, Claude
 trabajó como agente en la rama `agente/revision-semana6` y yo revisé el diff antes de
-integrarlo a `main`.
+integrarlo a `main`. En la semana 7, Claude propuso los casos, escribió el borrador
+de las pruebas y los datos sintéticos en la rama `semana7/suite-pruebas`; el borrador
+quedó en su propio commit y mi revisión en el siguiente (ver `registro_pruebas.md`).
 
 ## 8. Autora y licencia
 

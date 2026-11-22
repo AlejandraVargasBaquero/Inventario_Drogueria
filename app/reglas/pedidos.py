@@ -2,13 +2,10 @@
 
 from datetime import date
 
+from app.reglas.existencias import es_vigente, validar_cantidad, validar_minimo
 from app.reglas.modelos import Lote, Medicamento, ProductoPorPedir
 
-MENSAJE_MINIMO_INVALIDO = "El mínimo debe ser un número igual o mayor que cero"
-MENSAJE_MINIMO_NO_ENTERO = "El mínimo debe ser un número entero de cajas"
 MENSAJE_ID_REPETIDO = "El medicamento con id {id} está repetido"
-MENSAJE_CANTIDAD_NO_ENTERA = "El lote {lote} tiene una cantidad que no es entera"
-MENSAJE_CANTIDAD_NEGATIVA = "El lote {lote} tiene una cantidad negativa"
 MENSAJE_LOTE_SIN_MEDICAMENTO = "El lote {lote} es de un medicamento no registrado"
 
 
@@ -60,14 +57,6 @@ def productos_por_pedir(
     return sorted(por_pedir, key=lambda producto: producto.vigentes)
 
 
-def _es_entero(valor: object) -> bool:
-    """Indica si ``valor`` es un entero de verdad.
-
-    ``bool`` es subclase de ``int`` en Python, así que True y False se excluyen.
-    """
-    return isinstance(valor, int) and not isinstance(valor, bool)
-
-
 def _validar_medicamentos(medicamentos: list[Medicamento]) -> None:
     """Comprueba que los ids no se repitan y que cada mínimo sea un entero >= 0.
 
@@ -79,10 +68,7 @@ def _validar_medicamentos(medicamentos: list[Medicamento]) -> None:
         if medicamento.id in ids_vistos:
             raise ValueError(MENSAJE_ID_REPETIDO.format(id=medicamento.id))
         ids_vistos.add(medicamento.id)
-        if not _es_entero(medicamento.stock_minimo):
-            raise ValueError(MENSAJE_MINIMO_NO_ENTERO)
-        if medicamento.stock_minimo < 0:
-            raise ValueError(MENSAJE_MINIMO_INVALIDO)
+        validar_minimo(medicamento.stock_minimo)
 
 
 def _cajas_vigentes_por_medicamento(
@@ -105,15 +91,12 @@ def _cajas_vigentes_por_medicamento(
     """
     vigentes: dict[int, int] = {}
     for lote in lotes:
-        if not _es_entero(lote.cantidad_actual):
-            raise ValueError(MENSAJE_CANTIDAD_NO_ENTERA.format(lote=lote.numero_lote))
-        if lote.cantidad_actual < 0:
-            raise ValueError(MENSAJE_CANTIDAD_NEGATIVA.format(lote=lote.numero_lote))
+        validar_cantidad(lote)
         if lote.medicamento_id not in ids_registrados:
             raise ValueError(
                 MENSAJE_LOTE_SIN_MEDICAMENTO.format(lote=lote.numero_lote)
             )
-        if lote.fecha_vencimiento >= hoy:
+        if es_vigente(lote, hoy):
             vigentes[lote.medicamento_id] = (
                 vigentes.get(lote.medicamento_id, 0) + lote.cantidad_actual
             )
