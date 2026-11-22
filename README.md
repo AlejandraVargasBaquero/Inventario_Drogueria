@@ -53,7 +53,7 @@ Productos por pedir al 24/10/2026:
 ## 5. Pruebas y calidad
 
 ```bash
-python -m pytest -v                          # resultado esperado: 70 passed
+python -m pytest -v                          # resultado esperado: 93 passed
 python -m ruff check --select E,F,B,S .      # resultado esperado: All checks passed!
 pip-audit -r requirements.txt                # auditoría de dependencias
 ```
@@ -66,14 +66,18 @@ de casos, la revisión de las pruebas de la IA y el resultado de romper el códi
 ## 6. Estructura
 
 La estructura sigue el ADR-001 (aplicación local en capas: interfaz, reglas de
-inventario y acceso a datos). Por ahora solo existe la capa de reglas, que no depende de
-Flask ni de SQLite y por eso se puede probar sola.
+inventario y acceso a datos). La capa de reglas no depende de Flask ni de SQLite y por
+eso se puede probar sola. La capa de datos (`app/datos/`, rama `backend/capa-datos`)
+guarda en SQLite y aplica las mismas reglas antes de guardar.
 
 ```
 inventario-drogueria/
 ├── app/
 │   ├── __init__.py
 │   ├── __main__.py            # Demostración: python -m app
+│   ├── datos/                 # Capa de acceso a datos (backend)
+│   │   ├── __init__.py
+│   │   └── repositorio.py     # Medicamentos y lotes en SQLite
 │   └── reglas/                # Capa de reglas de inventario
 │       ├── __init__.py
 │       ├── existencias.py     # validar_minimo, cajas_vigentes y es_vigente (semana 7)
@@ -85,7 +89,8 @@ inventario-drogueria/
 │   ├── test_validar_minimo.py # Particiones y límites del mínimo (semana 7)
 │   ├── test_cajas_vigentes.py # Particiones y límites de las cajas vigentes (semana 7)
 │   ├── test_decision_pedidos.py # Tabla de decisión de productos_por_pedir (semana 7)
-│   └── test_datos_sinteticos.py # Pruebas con los datos sintéticos (semana 7)
+│   ├── test_datos_sinteticos.py # Pruebas con los datos sintéticos (semana 7)
+│   └── test_repositorio.py    # Capa de datos con SQLite (backend)
 ├── docs/evidencias/           # Capturas de la revisión de la semana 6
 ├── .env.example               # Plantilla de variables de entorno (sin valores reales)
 ├── bitacora_ia.md             # Bitácora de uso de IA
@@ -114,6 +119,32 @@ quedó en su propio commit y mi revisión en el siguiente (ver `registro_pruebas
 - Licencia: proyecto académico, todos los derechos reservados.
 
 ## 9. Funcionalidades
+
+### Capa de datos con SQLite (backend)
+
+Funciones de `app/datos/repositorio.py`:
+
+| Función | Qué hace | Errores (`ValueError`, no guarda nada) |
+|---|---|---|
+| `conectar(ruta)` | Abre la base con las llaves foráneas activadas (`":memory:"` en las pruebas) | — |
+| `crear_esquema(con)` | Crea las tablas `medicamento` y `lote` si no existen; no borra datos | — |
+| `guardar_medicamento(con, nombre, stock_minimo)` | Registra un medicamento y devuelve su id | Nombre vacío; mínimo no entero o negativo (escenario 2 de HU-05) |
+| `cambiar_minimo(con, medicamento_id, nuevo_minimo)` | Cambia el mínimo | Mínimo inválido; medicamento que no existe |
+| `guardar_lote(con, medicamento_id, numero_lote, fecha, cantidad)` | Registra un lote | Número vacío; fecha que no es `date` (incluido `datetime`); cantidad inválida; medicamento que no existe; lote repetido para el mismo medicamento |
+| `listar_medicamentos(con)` | Medicamentos en el orden de registro | — |
+| `listar_lotes(con)` | Lotes con la fecha convertida a `date` | — |
+
+Decisiones:
+
+- Todas las consultas usan parámetros `?`. Prueba de abuso: los nombres `' OR 1=1 --` y
+  `Jarabe'); DROP TABLE medicamento; --` se guardan como texto y la tabla sigue intacta
+  (pendiente de inyección de la semana 6).
+- Las fechas se guardan como texto ISO (AAAA-MM-DD) y se leen como `date`; un `datetime`
+  no se acepta (pendiente de fechas de la semana 6).
+- El nombre del medicamento es obligatorio al guardar (ambigüedad A-6 de la semana 7).
+  Es una validación del registro, no de HU-05; queda por confirmar con el cliente.
+- Las tablas también tienen `CHECK` para el mínimo y la cantidad, por si alguien escribe
+  directamente en la base.
 
 ### HU-05 (semana 5)
 

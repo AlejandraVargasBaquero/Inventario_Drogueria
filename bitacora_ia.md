@@ -150,12 +150,23 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Verificación:** `test_datos_sinteticos.py`: 9 pruebas pasan; el esperado de 2.500 cajas en los 5.000 lotes sale de 5.000 / 2, porque los pares vencen hoy y los impares vencieron ayer.
 - **Commit relacionado:** `25ce969`.
 
+## Backend: capa de datos con SQLite
+
+### Entrada 16
+
+- **Fecha:** 2026-11-22
+- **Prompt o sugerencia:** Agente (Claude) en la rama `backend/capa-datos`. **Rol:** desarrollador Python que trabaja con pruebas primero. **Contexto:** ADR-001 (capas de interfaz, reglas y datos; SQLite), contrato de HU-05, modelos de `app/reglas/modelos.py` y la tabla de Pendientes de `revision_seguridad.md`. **Tarea:** escribir primero las pruebas del repositorio (medicamentos, lotes, escenario 2 al guardar, fechas, inyección SQL y HU-05 con datos leídos de la base) y después la implementación. **Formato:** un commit en rojo y uno en verde. **Restricciones:** solo `sqlite3` de la librería estándar, consultas con `?`, reutilizar `validar_minimo` y `validar_cantidad`, no modificar las pruebas existentes.
+- **Decisión:** Aceptada con cambios
+- **Por qué:** Cierra dos pendientes de la semana 6: inyección (consultas con parámetros y prueba con `' OR 1=1 --`) y fechas (`datetime` no se acepta; la fecha se guarda como texto ISO y se lee como `date`). La IA propuso exigir el nombre del medicamento: lo acepté solo para el registro, porque HU-05 no lo dice; queda como pregunta para el cliente (ambigüedad A-6).
+- **Verificación:** El commit en rojo tenía 23 pruebas nuevas que fallaban con el esqueleto (`NotImplementedError`). Con la implementación: `python -m pytest`: 93 passed, y `git diff` entre los dos commits no toca `tests/`. `ruff check --select E,F,B,S .`: All checks passed! (S608, el aviso de SQL armado con texto, no aparece).
+- **Commit relacionado:** `c1f0cbf` (en rojo) y `6d5ea55` (en verde).
+
 ## Resumen
 
 | Decisión | Cantidad |
 |---|---|
 | Aceptadas | 5 (entradas 4, 5, 7, 9 y 14) |
-| Aceptadas con cambios | 7 (entradas 3, 6, 8, 10, 12, 13 y 15) |
+| Aceptadas con cambios | 8 (entradas 3, 6, 8, 10, 12, 13, 15 y 16) |
 | Rechazadas | 3 (entradas 1, 2 y 11) |
 
 ## Errores que atraparon las pruebas
