@@ -2,8 +2,8 @@
 
 Proyecto: Sistema de inventario para una droguería de barrio, con control de lotes y fechas de vencimiento
 Estudiante: Alejandra Vargas Baquero
-Funcionalidad: HU-05 Productos bajo el mínimo (`productos_por_pedir`). Semana 6: revisión de código y seguridad.
-Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de clase; Gemini (chat) para explicar y revisar el código de clase; Claude (chat) para la implementación y el refactor del proyecto. En la semana 6, Claude como revisor (chat) y como agente en la rama `agente/revision-semana6`.
+Funcionalidad: HU-05 Productos bajo el mínimo (`productos_por_pedir`). Semana 6: revisión de código y seguridad. Semana 7: suite de pruebas con técnicas formales (`validar_minimo`, `cajas_vigentes` y `productos_por_pedir`).
+Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de clase; Gemini (chat) para explicar y revisar el código de clase; Claude (chat) para la implementación y el refactor del proyecto. En la semana 6, Claude como revisor (chat) y como agente en la rama `agente/revision-semana6`. En la semana 7, Claude para proponer casos, escribir el borrador de las pruebas y generar los datos sintéticos, en la rama `semana7/suite-pruebas`.
 
 > Parto del taller de clase, como lo permite la tarea: allí Copilot escribió las pruebas y la
 > implementación de `productos_por_pedir` para la tienda del OVA 1. Las capturas están en el
@@ -112,12 +112,50 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Verificación:** Reproduje el error con `Lote(1, "L", datetime(2027, 1, 1), 3)`.
 - **Commit relacionado:** Ninguno (pendiente).
 
+## Entradas de la semana 7
+
+### Entrada 12
+
+- **Fecha:** 2026-11-22
+- **Prompt o sugerencia:** Diseño de casos con IA (Claude) con el prompt de la semana: «Actúa como analista de pruebas. Te paso la regla completa de tres funciones de la capa de reglas: `validar_minimo` (HU-05, escenario 2 y semana 6), `cajas_vigentes` (supuestos 1, 2 y 4 del contrato) y `productos_por_pedir` (contrato completo de HU-05). Tarea: propón los casos con particiones de equivalencia (incluidas las inválidas), valores límite (último valor de una partición y primero de la siguiente) y una tabla de decisión para `productos_por_pedir`. Formato: una tabla por función con técnica, partición o límite, entrada y esperado. Restricciones: el esperado sale de la regla, no del código; si la regla no dice algo, márcalo como ambigüedad en lugar de decidirlo.»
+- **Decisión:** Aceptada con cambios
+- **Por qué:** Revisé la propuesta con las cinco preguntas. *Particiones:* faltaban `True`, `False` y `10.0` para el mínimo, y el lote con 0 cajas. *Límites:* para la fecha propuso ayer, hoy y mañana; dejé solo ayer y hoy, que son el último vencido y el primer vigente. *Origen del esperado:* los esperados de 18 y 3 cajas los comprobé con los ejemplos 1 y 2 del README. *Ambigüedades:* quedaron seis (A-1 a A-6 y P-12, sección 1 del registro). *Reglas inventadas:* no agregué una validación de nombre vacío porque HU-05 no la pide; quedó como ambigüedad A-6 para la capa de datos. En la tabla de decisión simplifiqué R2 y R3, porque con mínimo 0 la condición «vigentes < mínimo» nunca se cumple.
+- **Verificación:** Cada fila de la tabla tiene una regla escrita como oráculo y una prueba que la cubre (registro, sección 1).
+- **Commit relacionado:** `ae0402e` (las tablas quedaron en `registro_pruebas.md`).
+
+### Entrada 13
+
+- **Fecha:** 2026-11-22
+- **Prompt o sugerencia:** Generación de pruebas (Claude): «Actúa como desarrollador Python que escribe pruebas con pytest. Contexto: capa de reglas del inventario de una droguería (Python 3.13, pytest 9.1.1). Te paso la regla de cada función y mi tabla de casos revisada. Tarea: escribe las pruebas de cada fila. Formato: un archivo por función, `@pytest.mark.parametrize` con un comentario por fila, `pytest.raises` con el tipo de error exacto y esperados fijos escritos a mano. Restricciones: no modifiques el código de `app/`; el esperado sale de la regla, no de ejecutar el código.»
+- **Decisión:** Aceptada con cambios
+- **Por qué:** El borrador traía 32 casos y todos pasaban, pero eso no dice nada. Al revisar cada prueba con las tres preguntas corregí 6, descarté 7 y agregué las particiones y límites que faltaban (15 filas en la sección 2 del registro). Lo más importante: los `pytest.raises(ValueError)` sin mensaje pasaban aunque saliera el error equivocado, y la tabla de decisión solo miraba si el medicamento aparecía, no con cuántas cajas. Además, los mensajes esperados los escribí a mano en cada prueba en lugar de importar las constantes del código, para que el oráculo no salga del código.
+- **Verificación:** `python -m pytest -v`: 70 passed. Rompí el código 8 veces (sección 3 del registro): en M6 (`cantidad < -1`) no falló ninguna prueba, así que agregué el límite −1 de la cantidad y ahora sí falla. `git diff` del borrador a la revisión: no cambió nada en `app/`.
+- **Commit relacionado:** `a286c97` (borrador sin revisar), `ae0402e` (revisión) y `fc827e1` (caso agregado después de romper el código).
+
+### Entrada 14
+
+- **Fecha:** 2026-11-22
+- **Prompt o sugerencia:** Para probar tres funciones, Claude propuso sacar `validar_minimo`, `cajas_vigentes` y `es_vigente` de `productos_por_pedir` a un módulo nuevo, `app/reglas/existencias.py`, y hacer que `productos_por_pedir` las use.
+- **Decisión:** Aceptada
+- **Por qué:** Las tres reglas ya existían dentro de `productos_por_pedir` y están en el contrato de HU-05, así que no se inventa ninguna regla. Al ser la misma lógica compartida, si rompo `es_vigente` fallan las pruebas de las dos funciones. Lo hice en un commit aparte y antes de generar las pruebas, para que la IA no tocara el código al escribirlas.
+- **Verificación:** `python -m pytest`: 23 passed antes y después del refactor; `git diff -- tests` vacío; `python -m app` imprime la misma lista; ruff: All checks passed!
+- **Commit relacionado:** `bbabf8c`.
+
+### Entrada 15
+
+- **Fecha:** 2026-11-22
+- **Prompt o sugerencia:** Datos sintéticos (Claude): «Genera datos de prueba para el inventario de una droguería de barrio en Neiva: 6 medicamentos y sus lotes. Sin personas reales ni marcas reales. Incluye casos difíciles: tildes, ñ, apóstrofo, texto vacío, mínimo 0, lote con 0 cajas, un lote que vence hoy, uno que venció ayer y un medicamento sin lotes. Agrega un caso de volumen con 5.000 lotes (RNF-01). Entrégalos como fixtures de pytest en `tests/conftest.py`.»
+- **Decisión:** Aceptada con cambios
+- **Por qué:** Los datos no tienen personas ni teléfonos (el proyecto aún no maneja clientes) y la marca D'Rosa es inventada. Calculé a mano, lote por lote, las cajas vigentes de cada medicamento y la lista por pedir (registro, sección 4); no tomé el esperado de ejecutar el código. Cambié el lote que vence hoy para que quedara exactamente igual al mínimo (4 de 4), así combina dos límites en un solo dato. El nombre vacío dejó ver la ambigüedad A-6.
+- **Verificación:** `test_datos_sinteticos.py`: 9 pruebas pasan; el esperado de 2.500 cajas en los 5.000 lotes sale de 5.000 / 2, porque los pares vencen hoy y los impares vencieron ayer.
+- **Commit relacionado:** `25ce969`.
+
 ## Resumen
 
 | Decisión | Cantidad |
 |---|---|
-| Aceptadas | 4 (entradas 4, 5, 7 y 9) |
-| Aceptadas con cambios | 4 (entradas 3, 6, 8 y 10) |
+| Aceptadas | 5 (entradas 4, 5, 7, 9 y 14) |
+| Aceptadas con cambios | 7 (entradas 3, 6, 8, 10, 12, 13 y 15) |
 | Rechazadas | 3 (entradas 1, 2 y 11) |
 
 ## Errores que atraparon las pruebas
@@ -131,6 +169,14 @@ de acetaminofén, pero no sé cuántas de esas ya están vencidas». Lo corregí
 lotes con `fecha_vencimiento >= hoy`. Las pruebas también atraparon el `<=` (entrada 2), el
 mensaje de error distinto al del escenario 2 y que no se validaban los lotes con cantidad
 negativa ni los lotes de un medicamento no registrado.
+
+### Semana 7
+
+Las pruebas nuevas no encontraron defectos en el código, pero romperlo a propósito sí
+encontró un hueco en las pruebas: con `cantidad_actual < -1` en lugar de `< 0` las 60
+pruebas pasaban, porque la cantidad negativa solo se probaba con −4. Agregué el límite −1
+(registro, sección 3, M6). También vi que el borrador de la IA tenía 32 casos en verde y
+aun así varios no habrían fallado con el código roto, como los `pytest.raises` sin mensaje.
 
 ## Reflexión final
 
