@@ -1,5 +1,12 @@
-"""Tabla de decisión de productos_por_pedir (HU-05)."""
+"""Tabla de decisión de productos_por_pedir (HU-05).
 
+Condiciones: (A) datos válidos, (B) mínimo mayor que 0, (C) cajas vigentes menores
+que el mínimo, (D) el medicamento tiene cajas vencidas. Acción: aparece por pedir,
+con cuántas cajas, o ValueError. La tabla completa está en registro_pruebas.md.
+Hoy = 24/10/2026.
+"""
+
+import re
 from datetime import date
 
 import pytest
@@ -13,44 +20,43 @@ VENCIDO = date(2026, 9, 30)
 
 
 @pytest.mark.parametrize(
-    "minimo, lotes, aparece",
+    "minimo, lotes, esperado",
     [
-        (0, [], False),  # R2: mínimo 0, sin vencidos
-        (0, [Lote(1, "L-V", VENCIDO, 5)], False),  # R3: mínimo 0, con vencidos
-        (10, [Lote(1, "L-1", VIGENTE, 3)], True),  # R4: bajo el mínimo
+        (0, [], []),  # R2: A sí, B no, D no -> no aparece
+        (0, [Lote(1, "L-V", VENCIDO, 5)], []),  # R3: A sí, B no, D sí -> no aparece
+        (10, [Lote(1, "L-1", VIGENTE, 3)], ["3 de 10 cajas"]),  # R4: B sí, C sí, D no
         (
             10,
             [Lote(1, "L-1", VIGENTE, 3), Lote(1, "L-V", VENCIDO, 12)],
-            True,
-        ),  # R5: bajo el mínimo, vencidas no cuentan
-        (10, [Lote(1, "L-1", VIGENTE, 18)], False),  # R6: no está bajo el mínimo
+            ["3 de 10 cajas"],
+        ),  # R5: B sí, C sí, D sí -> las 12 vencidas no cuentan (3 + 12 = 15 sacaría
+        # al medicamento de la lista)
+        (10, [Lote(1, "L-1", VIGENTE, 18)], []),  # R6: B sí, C no, D no
         (
             10,
             [Lote(1, "L-1", VIGENTE, 18), Lote(1, "L-V", VENCIDO, 12)],
-            False,
-        ),  # R7: no está bajo el mínimo, con vencidos
+            [],
+        ),  # R7: B sí, C no, D sí
+        # Límites de la condición C (vigentes contra mínimo 10):
+        (10, [Lote(1, "L-1", VIGENTE, 9)], ["9 de 10 cajas"]),  # 9: último que aparece
+        (10, [Lote(1, "L-1", VIGENTE, 10)], []),  # 10: primero que no (supuesto 3)
+        # Límite de la condición B (mínimo 1 contra mínimo 0, sin cajas):
+        (1, [], ["0 de 1 cajas"]),  # mínimo 1: primero que sí pide
     ],
 )
-def test_tabla_de_decision(minimo, lotes, aparece):
+def test_tabla_de_decision(minimo, lotes, esperado):
     medicamento = Medicamento(1, "Acetaminofén 500 mg", minimo)
 
     resultado = productos_por_pedir([medicamento], lotes, HOY)
 
-    assert (len(resultado) == 1) == aparece
+    assert [producto.texto for producto in resultado] == esperado
 
 
-def test_r1_datos_invalidos_lanza_error():
-    medicamento = Medicamento(1, "Acetaminofén 500 mg", -2)
-    with pytest.raises(ValueError):
-        productos_por_pedir([medicamento], [], HOY)
+def test_r1_datos_invalidos_lanza_error_aunque_haya_que_pedir():
+    """R1: si A es no, el resto no importa; no se devuelve una lista parcial."""
+    bajo_el_minimo = Medicamento(1, "Acetaminofén 500 mg", 10)
+    invalido = Medicamento(3, "Ibuprofeno 400 mg", -2)
+    mensaje = "El mínimo debe ser un número igual o mayor que cero"
 
-
-def test_vigentes_igual_al_minimo_no_aparece():
-    medicamento = Medicamento(4, "Loratadina 10 mg", 10)
-    lotes = [Lote(4, "LO-01", date(2027, 5, 1), 10)]
-    assert productos_por_pedir([medicamento], lotes, HOY) == []
-
-
-def test_resultado_no_es_none():
-    medicamento = Medicamento(1, "Acetaminofén 500 mg", 10)
-    assert productos_por_pedir([medicamento], [], HOY) is not None
+    with pytest.raises(ValueError, match=f"^{re.escape(mensaje)}$"):
+        productos_por_pedir([bajo_el_minimo, invalido], [], HOY)
