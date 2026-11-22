@@ -161,12 +161,23 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Verificación:** El commit en rojo tenía 23 pruebas nuevas que fallaban con el esqueleto (`NotImplementedError`). Con la implementación: `python -m pytest`: 93 passed, y `git diff` entre los dos commits no toca `tests/`. `ruff check --select E,F,B,S .`: All checks passed! (S608, el aviso de SQL armado con texto, no aparece).
 - **Commit relacionado:** `c1f0cbf` (en rojo) y `6d5ea55` (en verde).
 
+## Frontend: pantallas web con Flask
+
+### Entrada 17
+
+- **Fecha:** 2026-11-22
+- **Prompt o sugerencia:** Agente (Claude) en la rama `frontend/pantallas-web`, que sale de `backend/capa-datos`. **Rol:** desarrollador Python y Flask que trabaja con pruebas primero. **Contexto:** ADR-001 (Flask, SQLite, aplicación local en capas), contrato de HU-05, la capa de datos ya hecha y los pendientes de seguridad de la semana 6 (XSS y `SECRET_KEY` en `.env`). **Tarea:** dos pantallas (por pedir e inventario) y los formularios de medicamento, mínimo y lote; primero las pruebas con el cliente de pruebas de Flask y una base temporal. **Formato:** commit en rojo y commit en verde. **Restricciones:** ninguna regla de negocio en las rutas; Flask con versión fijada como única dependencia nueva; no usar `|safe`; no modificar las pruebas existentes.
+- **Decisión:** Aceptada con cambios
+- **Por qué:** Las rutas solo convierten texto y llaman a las capas de datos y reglas, así que los mensajes que ve el dueño son los mismos de HU-05. La IA propuso python-dotenv para leer `.env`; lo cambié por una función de 10 líneas con la librería estándar para no sumar otra dependencia. Agregó un token en cada formulario (CSRF), que no estaba en mis pendientes pero protege el cambio del mínimo; lo acepté con su prueba de abuso. La fecha «2027-02-30» no existe: se agregó como caso para que muestre el mensaje y no lance un error 500.
+- **Verificación:** commit en rojo con 25 pruebas nuevas que fallaban (`NotImplementedError`); con la implementación, `python -m pytest`: 118 passed y `tests/` sin cambios entre los dos commits. `ruff check --select E,F,B,S .`: All checks passed! Abrí las dos pantallas con los datos del documento de requisitos: «Por pedir» muestra ibuprofeno 2 de 5, acetaminofén 3 de 10 y amoxicilina 8 de 10 (igual que `python -m app`), y al cambiar el mínimo del ibuprofeno a −2 sale el mensaje del escenario 2 y el mínimo sigue en 5.
+- **Commit relacionado:** `e8ddb3e` (en rojo) y `2b6b82f` (en verde).
+
 ## Resumen
 
 | Decisión | Cantidad |
 |---|---|
 | Aceptadas | 5 (entradas 4, 5, 7, 9 y 14) |
-| Aceptadas con cambios | 8 (entradas 3, 6, 8, 10, 12, 13, 15 y 16) |
+| Aceptadas con cambios | 9 (entradas 3, 6, 8, 10, 12, 13, 15, 16 y 17) |
 | Rechazadas | 3 (entradas 1, 2 y 11) |
 
 ## Errores que atraparon las pruebas

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Inventario{% endblock %} · Droguería San Rafael</title>
+  <style>
+    :root { --verde: #1f6f50; --rojo: #a12b2b; --gris: #5d6670; --borde: #d9dee3; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, "Segoe UI", Arial, sans-serif;
+           color: #1d232a; background: #f6f8f9; line-height: 1.45; }
+    header { background: var(--verde); color: #fff; padding: 0.8rem 1.5rem;
+             display: flex; gap: 2rem; align-items: baseline; flex-wrap: wrap; }
+    header strong { font-size: 1.15rem; }
+    nav a { color: #fff; margin-right: 1.2rem; text-decoration: none; opacity: 0.85; }
+    nav a[aria-current="page"] { opacity: 1; border-bottom: 2px solid #fff; }
+    main { max-width: 960px; margin: 1.5rem auto; padding: 0 1.5rem; }
+    h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
+    .fecha { color: var(--gris); margin: 0 0 1.2rem; }
+    table { width: 100%; border-collapse: collapse; background: #fff;
+            border: 1px solid var(--borde); margin-bottom: 1.5rem; }
+    th, td { text-align: left; padding: 0.55rem 0.75rem;
+             border-bottom: 1px solid var(--borde); }
+    th { background: #eef2f4; font-weight: 600; }
+    td.num { font-variant-numeric: tabular-nums; }
+    .aviso { padding: 0.7rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+    .aviso.error { background: #fbeaea; color: var(--rojo); border: 1px solid #efc3c3; }
+    .aviso.ok { background: #e6f4ee; color: var(--verde); border: 1px solid #b9dfcc; }
+    .vacio { background: #fff; border: 1px dashed var(--borde); padding: 1.2rem;
+             color: var(--gris); }
+    .estado-vencido { color: var(--rojo); font-weight: 600; }
+    .estado-vigente { color: var(--verde); }
+    form.fila { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: end; }
+    section.formulario { background: #fff; border: 1px solid var(--borde);
+                         padding: 1rem; margin-bottom: 1.5rem; }
+    label { display: flex; flex-direction: column; font-size: 0.85rem;
+            color: var(--gris); gap: 0.2rem; }
+    input, select { font: inherit; padding: 0.4rem 0.5rem; border: 1px solid #b8c0c8;
+                    border-radius: 4px; }
+    input.corto { width: 6rem; }
+    button { font: inherit; padding: 0.45rem 0.9rem; border: 0; border-radius: 4px;
+             background: var(--verde); color: #fff; cursor: pointer; }
+    h2 { font-size: 1.1rem; margin: 1.5rem 0 0.6rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Droguería San Rafael</strong>
+    <nav>
+      <a href="{{ url_for('web.por_pedir') }}"
+         {% if request.endpoint == 'web.por_pedir' %}aria-current="page"{% endif %}>Por pedir</a>
+      <a href="{{ url_for('web.inventario') }}"
+         {% if request.endpoint == 'web.inventario' %}aria-current="page"{% endif %}>Inventario</a>
+    </nav>
+  </header>
+  <main>
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+      <p class="aviso {{ categoria }}" role="{{ 'alert' if categoria == 'error' else 'status' }}">{{ mensaje }}</p>
+    {% endfor %}
+    {% block contenido %}{% endblock %}
+  </main>
+</body>
+</html>
