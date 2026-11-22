@@ -15,8 +15,10 @@ Funcionalidad implementada: HU-05 «Productos bajo el mínimo» (ver la sección
 
 - Python 3.10 o superior (desarrollado con Python 3.13).
 - Git.
-- Dependencias con versión fijada en `requirements.txt`: `pytest==9.1.1` (pruebas) y
-  `ruff==0.16.9` (linter). La capa de reglas solo usa la librería estándar (ADR-001).
+- Dependencias con versión fijada en `requirements.txt`: `Flask==3.1.3` (capa web),
+  `pytest==9.1.1` (pruebas) y `ruff==0.16.9` (linter). Flask instala también Werkzeug,
+  Jinja2, itsdangerous, click, blinker y MarkupSafe. Las capas de reglas y de datos solo
+  usan la librería estándar (`sqlite3`), como pide el ADR-001.
 
 ## 3. Instalación
 
@@ -29,13 +31,30 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-Cuando existan la capa web y la de datos, copia `.env.example` como `.env` y pon tus
-valores. El archivo `.env` nunca se sube (está en `.gitignore`).
+Copia `.env.example` como `.env` y pon tu propia `SECRET_KEY` (el comando para generarla
+está en el archivo). El archivo `.env` y la base `inventario.sqlite3` nunca se suben
+(están en `.gitignore`).
+
+```bash
+copy .env.example .env          # Windows (PowerShell)
+# cp .env.example .env            # Linux o macOS
+```
 
 ## 4. Ejecución
 
-Por ahora solo existe la capa de reglas. Para ver HU-05 con los datos del documento de
-requisitos (hoy = 24/10/2026):
+### Aplicación web
+
+```bash
+python -m flask --app app.web run
+```
+
+Abre http://127.0.0.1:5000 en el navegador. La primera vez se crea el archivo
+`inventario.sqlite3` vacío. En **Inventario** registras medicamentos con su mínimo y
+lotes con su fecha de vencimiento; en **Por pedir** ves HU-05 con la fecha de hoy.
+
+### Demostración de la regla sin la web
+
+Para ver HU-05 con los datos del documento de requisitos (hoy = 24/10/2026):
 
 ```bash
 python -m app
@@ -53,7 +72,7 @@ Productos por pedir al 24/10/2026:
 ## 5. Pruebas y calidad
 
 ```bash
-python -m pytest -v                          # resultado esperado: 93 passed
+python -m pytest -v                          # resultado esperado: 118 passed
 python -m ruff check --select E,F,B,S .      # resultado esperado: All checks passed!
 pip-audit -r requirements.txt                # auditoría de dependencias
 ```
@@ -68,7 +87,9 @@ de casos, la revisión de las pruebas de la IA y el resultado de romper el códi
 La estructura sigue el ADR-001 (aplicación local en capas: interfaz, reglas de
 inventario y acceso a datos). La capa de reglas no depende de Flask ni de SQLite y por
 eso se puede probar sola. La capa de datos (`app/datos/`, rama `backend/capa-datos`)
-guarda en SQLite y aplica las mismas reglas antes de guardar.
+guarda en SQLite y aplica las mismas reglas antes de guardar. La capa de interfaz
+(`app/web/`, rama `frontend/pantallas-web`) solo convierte el texto de los formularios,
+llama a las otras dos capas y muestra el resultado.
 
 ```
 inventario-drogueria/
@@ -78,6 +99,11 @@ inventario-drogueria/
 │   ├── datos/                 # Capa de acceso a datos (backend)
 │   │   ├── __init__.py
 │   │   └── repositorio.py     # Medicamentos y lotes en SQLite
+│   ├── web/                   # Capa de interfaz con Flask (frontend)
+│   │   ├── __init__.py        # create_app, conexión por petición y lectura de .env
+│   │   ├── formularios.py     # Texto del formulario a entero y a fecha
+│   │   ├── rutas.py           # Pantallas y formularios
+│   │   └── templates/         # base, por_pedir e inventario (Jinja2)
 │   └── reglas/                # Capa de reglas de inventario
 │       ├── __init__.py
 │       ├── existencias.py     # validar_minimo, cajas_vigentes y es_vigente (semana 7)
@@ -90,7 +116,8 @@ inventario-drogueria/
 │   ├── test_cajas_vigentes.py # Particiones y límites de las cajas vigentes (semana 7)
 │   ├── test_decision_pedidos.py # Tabla de decisión de productos_por_pedir (semana 7)
 │   ├── test_datos_sinteticos.py # Pruebas con los datos sintéticos (semana 7)
-│   └── test_repositorio.py    # Capa de datos con SQLite (backend)
+│   ├── test_repositorio.py    # Capa de datos con SQLite (backend)
+│   └── test_pantallas.py      # Capa web con Flask (frontend)
 ├── docs/evidencias/           # Capturas de la revisión de la semana 6
 ├── .env.example               # Plantilla de variables de entorno (sin valores reales)
 ├── bitacora_ia.md             # Bitácora de uso de IA
@@ -119,6 +146,32 @@ quedó en su propio commit y mi revisión en el siguiente (ver `registro_pruebas
 - Licencia: proyecto académico, todos los derechos reservados.
 
 ## 9. Funcionalidades
+
+### Pantallas web con Flask (frontend)
+
+| Ruta | Método | Qué hace |
+|---|---|---|
+| `/` | GET | **Por pedir** (HU-05): medicamentos con menos cajas vigentes que su mínimo, de menor a mayor |
+| `/inventario` | GET | Medicamentos con cajas vigentes y mínimo, lotes con su estado (vigente o vencido) y los formularios |
+| `/medicamentos` | POST | Registra un medicamento (nombre y mínimo) |
+| `/medicamentos/<id>/minimo` | POST | Cambia el mínimo (HU-05, escenario 2: si es −2 no se guarda y sale el mensaje) |
+| `/lotes` | POST | Registra un lote (medicamento, número, fecha de vencimiento y cajas) |
+
+Decisiones:
+
+- Las rutas no tienen reglas de negocio: convierten el texto del formulario
+  (`formularios.py`), llaman a `app.datos` y `app.reglas` y muestran el mensaje de error
+  que esas capas lanzan. Un mínimo «10.0» o «abc» se convierte en «no es entero» y
+  muestra el mensaje de la regla (ambigüedad A-1 de la semana 7).
+- Después de cada formulario se redirige a la pantalla (Post/Redirect/Get), así que
+  recargar la página no vuelve a guardar.
+- **Seguridad:** cada formulario lleva un token aleatorio guardado en la sesión; un POST
+  sin él o con otro token recibe 400 y no guarda nada (CSRF). Jinja2 escapa el texto y
+  no se usa `|safe`: un nombre `<script>alert(1)</script>` se muestra como texto
+  (pendiente de XSS de la semana 6). La `SECRET_KEY` sale de `.env`; si no existe se
+  genera una aleatoria en cada arranque.
+- Todavía no hay usuarios ni roles: la aplicación es local, en el computador de la
+  droguería (ADR-001). Las contraseñas y el control de acceso siguen en Pendientes.
 
 ### Capa de datos con SQLite (backend)
 
