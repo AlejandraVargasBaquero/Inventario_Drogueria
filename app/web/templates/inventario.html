@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block titulo %}Inventario{% endblock %}
+{% block contenido %}
+  <h1>Inventario</h1>
+  <p class="fecha">Al {{ hoy.strftime('%d/%m/%Y') }}.</p>
+
+  <h2>Medicamentos</h2>
+  {% if medicamentos %}
+    <table>
+      <thead><tr><th>Medicamento</th><th>Cajas vigentes</th><th>Mínimo</th><th>Cambiar mínimo</th></tr></thead>
+      <tbody>
+        {% for fila in medicamentos %}
+          {% set m = fila.medicamento %}
+          <tr>
+            <td>{{ m.nombre }}</td>
+            <td class="num">{{ fila.vigentes }}</td>
+            <td class="num">{{ m.stock_minimo }}</td>
+            <td>
+              <form class="fila" method="post" action="{{ url_for('web.cambiar_minimo_de_medicamento', medicamento_id=m.id) }}">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <input class="corto" name="minimo" inputmode="numeric" aria-label="Nuevo mínimo de {{ m.nombre }}" value="{{ m.stock_minimo }}">
+                <button type="submit">Guardar</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="vacio">Todavía no hay medicamentos registrados.</p>
+  {% endif %}
+
+  <section class="formulario">
+    <h2>Registrar medicamento</h2>
+    <form class="fila" method="post" action="{{ url_for('web.registrar_medicamento') }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label>Nombre y presentación <input name="nombre" required placeholder="Acetaminofén 500 mg"></label>
+      <label>Mínimo de cajas <input class="corto" name="minimo" inputmode="numeric" required></label>
+      <button type="submit">Registrar</button>
+    </form>
+  </section>
+
+  <h2>Lotes</h2>
+  {% if lotes %}
+    <table>
+      <thead><tr><th>Lote</th><th>Medicamento</th><th>Vence</th><th>Cajas</th><th>Estado</th></tr></thead>
+      <tbody>
+        {% for fila in lotes %}
+          <tr>
+            <td>{{ fila.lote.numero_lote }}</td>
+            <td>{{ fila.nombre }}</td>
+            <td>{{ fila.lote.fecha_vencimiento.strftime('%d/%m/%Y') }}</td>
+            <td class="num">{{ fila.lote.cantidad_actual }}</td>
+            {% if fila.vigente %}
+              <td class="estado-vigente">Vigente</td>
+            {% else %}
+              <td class="estado-vencido">Vencido</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="vacio">Todavía no hay lotes registrados.</p>
+  {% endif %}
+
+  <section class="formulario">
+    <h2>Registrar lote</h2>
+    <form class="fila" method="post" action="{{ url_for('web.registrar_lote') }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label>Medicamento
+        <select name="medicamento_id" required>
+          <option value="">Elige…</option>
+          {% for fila in medicamentos %}
+            <option value="{{ fila.medicamento.id }}">{{ fila.medicamento.nombre }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Número de lote <input class="corto" name="numero_lote" required placeholder="L-0627"></label>
+      <label>Vence <input type="date" name="fecha_vencimiento" required></label>
+      <label>Cajas <input class="corto" name="cantidad" inputmode="numeric" required></label>
+      <button type="submit">Registrar</button>
+    </form>
+  </section>
+{% endblock %}

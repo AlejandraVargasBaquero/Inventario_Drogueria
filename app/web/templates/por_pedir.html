@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}Por pedir{% endblock %}
+{% block contenido %}
+  <h1>Productos por pedir</h1>
+  <p class="fecha">Al {{ hoy.strftime('%d/%m/%Y') }}. Solo cuentan las cajas de lotes que no han vencido.</p>
+  {% if productos %}
+    <table>
+      <thead><tr><th>Medicamento</th><th>Cajas vigentes de mínimo</th></tr></thead>
+      <tbody>
+        {% for producto in productos %}
+          <tr><td>{{ producto.nombre }}</td><td class="num">{{ producto.texto }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="vacio">No hay productos por pedir. Todos los medicamentos tienen al menos su mínimo de cajas vigentes.</p>
+  {% endif %}
+{% endblock %}
