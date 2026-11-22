@@ -65,17 +65,19 @@ def test_no_valida_lotes_de_otro_medicamento():
 
 
 @pytest.mark.parametrize(
-    "fecha",
+    "cantidad, fecha",
     [
-        date(2027, 1, 1),  # lote vigente con cantidad negativa
-        date(2026, 9, 30),  # lote vencido: también es error (decisión A-3)
+        (-4, date(2027, 1, 1)),  # partición: lote vigente con cantidad negativa
+        (-4, date(2026, 9, 30)),  # lote vencido: también es error (decisión A-3)
+        # Agregado en el paso 5: con «< -1» en lugar de «< 0» ninguna prueba fallaba.
+        (-1, date(2027, 1, 1)),  # límite: último negativo, justo antes del 0
     ],
 )
-def test_cantidad_negativa_lanza_error_con_el_lote(fecha):
+def test_cantidad_negativa_lanza_error_con_el_lote(cantidad, fecha):
     mensaje = "El lote L-0001 tiene una cantidad negativa"
 
     with pytest.raises(ValueError, match=f"^{re.escape(mensaje)}$"):
-        cajas_vigentes(1, [Lote(1, "L-0001", fecha, -4)], HOY)
+        cajas_vigentes(1, [Lote(1, "L-0001", fecha, cantidad)], HOY)
 
 
 @pytest.mark.parametrize(
