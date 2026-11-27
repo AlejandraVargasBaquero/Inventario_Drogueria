@@ -28,8 +28,8 @@ Revisé también lo que en la práctica estaba mal y aquí está bien: `permissi
 
 | Herramienta | Avisos | ¿Coinciden con mis hallazgos? | ¿Qué no encontró? |
 |---|---|---|---|
-| actionlint | [COMPLETAR después de ejecutarlo] | | |
-| hadolint | [COMPLETAR después de ejecutarlo] | | |
+| actionlint | No se ejecutó (no estaba instalado en el equipo) | — | Pendiente para la próxima versión |
+| hadolint | No se ejecutó (no estaba instalado en el equipo) | — | Pendiente para la próxima versión |
 
 Comandos: `pip install actionlint-py hadolint-py`, luego `actionlint .github/workflows/ci.yml` y `hadolint Dockerfile`.
 

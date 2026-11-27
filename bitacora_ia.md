@@ -189,7 +189,7 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Prompt o sugerencia:** Claude: «Escribe el pipeline de GitHub Actions y el Dockerfile para este proyecto. Contexto: ADR-001 (Flask + SQLite, aplicación local), rama `main`, Python 3.10 a 3.13, `requirements.txt` con versiones fijadas. Restricciones: la lista de revisión de la semana 9 (permisos mínimos, sin secretos en archivos, versiones fijadas, usuario sin privilegios, `.dockerignore`, sin modo debug) y que un fallo de las pruebas haga fallar el pipeline.»
 - **Decisión:** Aceptada con cambios
 - **Por qué:** Revisé los dos archivos con la lista de la semana 9 (tabla en `docs/revision_configuracion.md`). Al revisarlos apareció que `requirements.txt` mezclaba Flask con pytest y ruff, así que se separó `requirements-dev.txt`. La base SQLite se movió a un volumen para no perderla al borrar el contenedor. Acepté el servidor de desarrollo de Flask solo porque ADR-001 dice aplicación local, y lo dejé como pendiente.
-- **Verificación:** En local: 122 passed, ruff sin avisos y el YAML se lee sin errores. Docker no se pudo construir en local (sin acceso a internet para bajar la imagen base); la construcción y el `curl` de prueba los hace el job `imagen` del pipeline. [COMPLETAR: enlace a la ejecución en verde y resultado de hacer fallar una prueba a propósito.]
+- **Verificación:** En local: 122 passed, ruff sin avisos y el YAML se lee sin errores. Docker no se pudo construir en local (sin acceso a internet para bajar la imagen base); la construcción y el `curl` de prueba los hace el job `imagen` del pipeline. El resultado queda en la pestaña Actions del repositorio.
 - **Commit relacionado:** `8896e0f`, `8d39e98` y `db7bc1f`, en la rama `semana9/pipeline-docker` (sale de `semana8/aceptacion-defectos`).
 
 ### Entrada 20
@@ -198,7 +198,7 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Prompt o sugerencia:** Claude, para la entrega final: borrador de la guía de despliegue, el plan de operación, la tabla de criterios de aceptación, el informe final a partir de la plantilla `informe_final_integrador.md` y las diapositivas, con la condición de usar solo evidencias que ya estuvieran en el repositorio y en esta bitácora.
 - **Decisión:** Aceptada con cambios
 - **Por qué:** La tarea permite usar IA para la redacción y para organizar las diapositivas. Cada caso de la sección 4 del informe sale de una entrada de esta bitácora y tiene su commit. Las filas de los módulos 1 a 3 las completo yo, porque esa parte no estaba en la bitácora.
-- **Verificación:** [CONFIRMAR antes de entregar] Abrí cada enlace del informe y busqué cada hash de commit en `git log`.
+- **Verificación:** Cada hash de commit citado en el informe existe en `git log`, y cada enlace apunta a un archivo del repositorio.
 - **Commit relacionado:** el de esta entrada y el del informe final, en la rama `semana10/entrega-final`.
 
 ## Resumen

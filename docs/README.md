@@ -3,8 +3,8 @@
 | Módulo | Documento | Archivo |
 |---|---|---|
 | 1. Fundamentos | Propuesta del proyecto y banco de prompts | [propuesta.pdf](propuesta.pdf) |
-| 2. Requisitos | Documento de requisitos (HU-01 a HU-0x, entrevista, necesidades N-xx, RNF) | [AGREGAR: `docs/modulo2_requisitos.pdf`] |
-| 3. Diseño | Diseño, modelo de datos y ADR-001 / ADR-002 | [AGREGAR: `docs/modulo3_diseno_adr.pdf`] |
+| 2. Requisitos | HU-05, sus criterios de aceptación y la pregunta P-12 | [README, sección 9](../README.md#9-funcionalidades) |
+| 3. Diseño | Capas del ADR-001 y modelo de datos (`app/reglas/modelos.py`) | [README, sección 6](../README.md#6-estructura) |
 | 4. Código | Contrato e implementación de HU-05 | [README, sección 9](../README.md#9-funcionalidades) |
 | 4. Código | Revisión de código y seguridad (semana 6) | [revision_seguridad.md](../revision_seguridad.md) |
 | 5. Pruebas | Plan y registro de pruebas (semana 7) | [registro_pruebas.md](../registro_pruebas.md) |
