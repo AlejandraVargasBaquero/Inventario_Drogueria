@@ -23,6 +23,7 @@ MENSAJE_MEDICAMENTO_NO_EXISTE = "El medicamento con id {id} no existe"
 MENSAJE_LOTE_REPETIDO = "El lote {lote} ya está registrado para ese medicamento"
 MENSAJE_FECHA_INVALIDA = "La fecha de vencimiento debe ser una fecha (día, mes y año)"
 MENSAJE_NUMERO_MUY_GRANDE = "El número es demasiado grande para guardarlo"
+MENSAJE_LOTE_NO_EXISTE = "El lote {lote} no existe para ese medicamento"
 
 # Un INTEGER de SQLite ocupa 8 bytes con signo (D-01).
 MAYOR_ENTERO_SQLITE = 2**63 - 1
@@ -131,6 +132,60 @@ def guardar_lote(
         raise ValueError(MENSAJE_LOTE_REPETIDO.format(lote=numero_limpio)) from error
 
 
+def cambiar_cantidad_lote(
+    con: sqlite3.Connection, medicamento_id: int, numero_lote: str, nueva_cantidad: int
+) -> None:
+    """Cambia las cajas de un lote (por ejemplo, después de vender o contar).
+
+    Raises:
+        ValueError: si la cantidad no es un entero >= 0 o el lote no existe para
+            ese medicamento. En esos casos no se guarda nada.
+    """
+    validar_cantidad(Lote(medicamento_id, numero_lote, date.min, nueva_cantidad))
+    _exigir_rango(nueva_cantidad)
+    _exigir_lote(con, medicamento_id, numero_lote)
+    with con:
+        con.execute(
+            "UPDATE lote SET cantidad_actual = ?"
+            " WHERE medicamento_id = ? AND numero_lote = ?",
+            (nueva_cantidad, medicamento_id, numero_lote),
+        )
+
+
+def eliminar_lote(
+    con: sqlite3.Connection, medicamento_id: int, numero_lote: str
+) -> None:
+    """Elimina un lote de un medicamento.
+
+    Raises:
+        ValueError: si el lote no existe para ese medicamento.
+    """
+    _exigir_lote(con, medicamento_id, numero_lote)
+    with con:
+        con.execute(
+            "DELETE FROM lote WHERE medicamento_id = ? AND numero_lote = ?",
+            (medicamento_id, numero_lote),
+        )
+
+
+def eliminar_medicamento(con: sqlite3.Connection, medicamento_id: int) -> int:
+    """Elimina un medicamento y todos sus lotes en una sola transacción.
+
+    Returns:
+        Cuántos lotes se eliminaron con él.
+
+    Raises:
+        ValueError: si el medicamento no existe. No se borra nada.
+    """
+    _exigir_medicamento(con, medicamento_id)
+    with con:
+        lotes = con.execute(
+            "DELETE FROM lote WHERE medicamento_id = ?", (medicamento_id,)
+        ).rowcount
+        con.execute("DELETE FROM medicamento WHERE id = ?", (medicamento_id,))
+    return lotes
+
+
 def listar_medicamentos(con: sqlite3.Connection) -> list[Medicamento]:
     """Devuelve los medicamentos en el orden en que se registraron."""
     filas = con.execute(
@@ -176,3 +231,15 @@ def _exigir_medicamento(con: sqlite3.Connection, medicamento_id: int) -> None:
     ).fetchone()
     if fila is None:
         raise ValueError(MENSAJE_MEDICAMENTO_NO_EXISTE.format(id=medicamento_id))
+
+
+def _exigir_lote(
+    con: sqlite3.Connection, medicamento_id: int, numero_lote: str
+) -> None:
+    _exigir_rango(medicamento_id)
+    fila = con.execute(
+        "SELECT 1 FROM lote WHERE medicamento_id = ? AND numero_lote = ?",
+        (medicamento_id, numero_lote),
+    ).fetchone()
+    if fila is None:
+        raise ValueError(MENSAJE_LOTE_NO_EXISTE.format(lote=numero_lote))

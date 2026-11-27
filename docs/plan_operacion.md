@@ -21,8 +21,8 @@ Sistema de inventario de la Droguería San Rafael. Es una aplicación local de u
 
 - Cada cambio entra por una rama y un pull request. Solo se integra con el pipeline en verde.
 - Las dependencias tienen versión fijada. Se actualizan una por una, con el pipeline como red de seguridad.
-- Pendientes conocidos: usuarios y roles (por ahora la aplicación es local), dar de baja lotes vencidos (HU-06), servidor de producción si algún día se publica y la pregunta P-12 para el cliente.
+- Pendientes conocidos: usuarios y roles (por ahora la aplicación es local), dar de baja automáticamente los lotes vencidos (HU-06; hoy se eliminan a mano), servidor de producción si algún día se publica y la pregunta P-12 para el cliente.
 
 ## Si la IA dejara de estar disponible
 
-El código usa solo Flask y la librería estándar, tiene 122 pruebas y cada regla está escrita en el contrato de HU-05 del README. Cualquier cambio se puede hacer a mano y las pruebas dicen si algo se rompió.
+El código usa solo Flask y la librería estándar, tiene 145 pruebas y cada regla está escrita en el contrato de HU-05 del README. Cualquier cambio se puede hacer a mano y las pruebas dicen si algo se rompió.

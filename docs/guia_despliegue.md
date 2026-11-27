@@ -38,6 +38,6 @@ docker run -d --name inventario -p 127.0.0.1:5000:5000 \
 
 ## Antes de entregar una versión
 
-1. El pipeline de GitHub Actions está en verde (ruff, 122 pruebas, cobertura ≥ 90 % en reglas y datos, imagen construida).
+1. El pipeline de GitHub Actions está en verde (ruff, 145 pruebas, cobertura ≥ 90 % en reglas y datos, imagen construida).
 2. `pip-audit -r requirements.txt` no muestra vulnerabilidades.
 3. Copia de seguridad de la base antes de actualizar (ver [plan de operación](plan_operacion.md)).
