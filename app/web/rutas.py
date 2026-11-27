@@ -17,7 +17,10 @@ from flask import (
 )
 
 from app.datos.repositorio import (
+    cambiar_cantidad_lote,
     cambiar_minimo,
+    eliminar_lote,
+    eliminar_medicamento,
     guardar_lote,
     guardar_medicamento,
     listar_lotes,
@@ -144,4 +147,50 @@ def registrar_lote():
         flash(str(error), "error")
     else:
         flash(f"Se registró el lote {numero.strip()}", "ok")
+    return redirect(url_for("web.inventario"))
+
+
+@bp.post("/lotes/cantidad")
+def cambiar_cantidad_de_lote():
+    medicamento_id = texto_a_entero(request.form.get("medicamento_id"))
+    numero = request.form.get("numero_lote", "")
+    nueva = texto_a_entero(request.form.get("cantidad"))
+    if medicamento_id is None:
+        flash(MENSAJE_ELIGE_MEDICAMENTO, "error")
+        return redirect(url_for("web.inventario"))
+    try:
+        cambiar_cantidad_lote(obtener_bd(), medicamento_id, numero, nueva)
+    except ValueError as error:
+        flash(str(error), "error")
+    else:
+        flash(f"Se cambió la cantidad del lote {numero} a {nueva}", "ok")
+    return redirect(url_for("web.inventario"))
+
+
+@bp.post("/lotes/eliminar")
+def eliminar_un_lote():
+    medicamento_id = texto_a_entero(request.form.get("medicamento_id"))
+    numero = request.form.get("numero_lote", "")
+    if medicamento_id is None:
+        flash(MENSAJE_ELIGE_MEDICAMENTO, "error")
+        return redirect(url_for("web.inventario"))
+    try:
+        eliminar_lote(obtener_bd(), medicamento_id, numero)
+    except ValueError as error:
+        flash(str(error), "error")
+    else:
+        flash(f"Se eliminó el lote {numero}", "ok")
+    return redirect(url_for("web.inventario"))
+
+
+@bp.post("/medicamentos/<int:medicamento_id>/eliminar")
+def eliminar_un_medicamento(medicamento_id: int):
+    bd = obtener_bd()
+    nombres = {m.id: m.nombre for m in listar_medicamentos(bd)}
+    try:
+        lotes = eliminar_medicamento(bd, medicamento_id)
+    except ValueError as error:
+        flash(str(error), "error")
+    else:
+        flash(f"Se eliminó {nombres[medicamento_id]} y sus {lotes} lotes", "ok")
     return redirect(url_for("web.inventario"))

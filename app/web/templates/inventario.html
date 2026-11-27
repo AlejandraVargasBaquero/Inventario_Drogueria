@@ -7,7 +7,7 @@
   <h2>Medicamentos</h2>
   {% if medicamentos %}
     <table>
-      <thead><tr><th>Medicamento</th><th>Cajas vigentes</th><th>Mínimo</th><th>Cambiar mínimo</th></tr></thead>
+      <thead><tr><th>Medicamento</th><th>Cajas vigentes</th><th>Mínimo</th><th>Cambiar mínimo</th><th></th></tr></thead>
       <tbody>
         {% for fila in medicamentos %}
           {% set m = fila.medicamento %}
@@ -20,6 +20,13 @@
                 <input type="hidden" name="csrf" value="{{ csrf }}">
                 <input class="corto" name="minimo" inputmode="numeric" aria-label="Nuevo mínimo de {{ m.nombre }}" value="{{ m.stock_minimo }}">
                 <button type="submit">Guardar</button>
+              </form>
+            </td>
+            <td>
+              <form method="post" action="{{ url_for('web.eliminar_un_medicamento', medicamento_id=m.id) }}"
+                    onsubmit="return confirm('¿Eliminar este medicamento y todos sus lotes?');">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <button type="submit" class="peligro">Eliminar</button>
               </form>
             </td>
           </tr>
@@ -43,7 +50,7 @@
   <h2>Lotes</h2>
   {% if lotes %}
     <table>
-      <thead><tr><th>Lote</th><th>Medicamento</th><th>Vence</th><th>Cajas</th><th>Estado</th></tr></thead>
+      <thead><tr><th>Lote</th><th>Medicamento</th><th>Vence</th><th>Cajas</th><th>Estado</th><th>Cambiar cajas</th><th></th></tr></thead>
       <tbody>
         {% for fila in lotes %}
           <tr>
@@ -56,6 +63,24 @@
             {% else %}
               <td class="estado-vencido">Vencido</td>
             {% endif %}
+            <td>
+              <form class="fila" method="post" action="{{ url_for('web.cambiar_cantidad_de_lote') }}">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <input type="hidden" name="medicamento_id" value="{{ fila.lote.medicamento_id }}">
+                <input type="hidden" name="numero_lote" value="{{ fila.lote.numero_lote }}">
+                <input class="corto" name="cantidad" inputmode="numeric" aria-label="Cajas del lote {{ fila.lote.numero_lote }}" value="{{ fila.lote.cantidad_actual }}">
+                <button type="submit">Guardar</button>
+              </form>
+            </td>
+            <td>
+              <form method="post" action="{{ url_for('web.eliminar_un_lote') }}"
+                    onsubmit="return confirm('¿Eliminar este lote?');">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <input type="hidden" name="medicamento_id" value="{{ fila.lote.medicamento_id }}">
+                <input type="hidden" name="numero_lote" value="{{ fila.lote.numero_lote }}">
+                <button type="submit" class="peligro">Eliminar</button>
+              </form>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
