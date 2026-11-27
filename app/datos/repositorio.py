@@ -22,6 +22,10 @@ MENSAJE_LOTE_OBLIGATORIO = "El número de lote es obligatorio"
 MENSAJE_MEDICAMENTO_NO_EXISTE = "El medicamento con id {id} no existe"
 MENSAJE_LOTE_REPETIDO = "El lote {lote} ya está registrado para ese medicamento"
 MENSAJE_FECHA_INVALIDA = "La fecha de vencimiento debe ser una fecha (día, mes y año)"
+MENSAJE_NUMERO_MUY_GRANDE = "El número es demasiado grande para guardarlo"
+
+# Un INTEGER de SQLite ocupa 8 bytes con signo (D-01).
+MAYOR_ENTERO_SQLITE = 2**63 - 1
 
 ESQUEMA = """
 CREATE TABLE IF NOT EXISTS medicamento (
@@ -67,6 +71,7 @@ def guardar_medicamento(con: sqlite3.Connection, nombre: str, stock_minimo: int)
     """
     nombre_limpio = _texto_obligatorio(nombre, MENSAJE_NOMBRE_OBLIGATORIO)
     validar_minimo(stock_minimo)
+    _exigir_rango(stock_minimo)
     with con:
         cursor = con.execute(
             "INSERT INTO medicamento (nombre, stock_minimo) VALUES (?, ?)",
@@ -85,6 +90,7 @@ def cambiar_minimo(
             existe.
     """
     validar_minimo(nuevo_minimo)
+    _exigir_rango(nuevo_minimo)
     _exigir_medicamento(con, medicamento_id)
     with con:
         con.execute(
@@ -111,6 +117,7 @@ def guardar_lote(
     if not _es_fecha(fecha_vencimiento):
         raise ValueError(MENSAJE_FECHA_INVALIDA)
     validar_cantidad(Lote(medicamento_id, numero_limpio, fecha_vencimiento, cantidad))
+    _exigir_rango(cantidad)
     _exigir_medicamento(con, medicamento_id)
     fila = (medicamento_id, numero_limpio, fecha_vencimiento.isoformat(), cantidad)
     try:
@@ -156,7 +163,14 @@ def _es_fecha(valor: object) -> bool:
     return isinstance(valor, date) and not isinstance(valor, datetime)
 
 
+def _exigir_rango(numero: int) -> None:
+    """D-01: un entero que no cabe en SQLite lanzaba OverflowError (error 500)."""
+    if abs(numero) > MAYOR_ENTERO_SQLITE:
+        raise ValueError(MENSAJE_NUMERO_MUY_GRANDE)
+
+
 def _exigir_medicamento(con: sqlite3.Connection, medicamento_id: int) -> None:
+    _exigir_rango(medicamento_id)
     fila = con.execute(
         "SELECT 1 FROM medicamento WHERE id = ?", (medicamento_id,)
     ).fetchone()

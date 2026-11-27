@@ -333,3 +333,47 @@ def test_formulario_con_token_equivocado_se_rechaza(cliente, app):
 
     assert respuesta.status_code == 400
     assert medicamentos_guardados(app) == []
+
+
+# ---------- Defecto D-01 (semana 8) ----------
+
+NUMERO_ENORME = "99999999999999999999"  # 20 cifras: no cabe en un INTEGER de SQLite
+
+
+@pytest.mark.parametrize(
+    "ruta, campos",
+    [
+        ("/medicamentos", {"nombre": "Jarabe de prueba", "minimo": NUMERO_ENORME}),
+        ("/medicamentos/1/minimo", {"minimo": NUMERO_ENORME}),
+        (
+            "/lotes",
+            {
+                "medicamento_id": "1",
+                "numero_lote": "L-0001",
+                "fecha_vencimiento": "2027-01-01",
+                "cantidad": NUMERO_ENORME,
+            },
+        ),
+        (
+            "/lotes",
+            {
+                "medicamento_id": NUMERO_ENORME,
+                "numero_lote": "L-0001",
+                "fecha_vencimiento": "2027-01-01",
+                "cantidad": "3",
+            },
+        ),
+    ],
+)
+def test_d01_numero_enorme_muestra_mensaje_y_no_da_error_500(
+    cliente, app, ruta, campos
+):
+    """D-01: antes un número de 20 cifras daba error 500 (OverflowError de SQLite)."""
+    enviar(cliente, "/medicamentos", nombre="Ibuprofeno 400 mg", minimo="5")
+
+    respuesta = enviar(cliente, ruta, **campos)
+
+    assert respuesta.status_code == 200
+    assert "El número es demasiado grande" in html(respuesta)
+    assert [m.stock_minimo for m in medicamentos_guardados(app)] == [5]
+    assert lotes_guardados(app) == []
