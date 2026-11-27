@@ -2,7 +2,7 @@
 
 Proyecto: Sistema de inventario para una droguería de barrio, con control de lotes y fechas de vencimiento
 Estudiante: Alejandra Vargas Baquero
-Funcionalidad: HU-05 Productos bajo el mínimo (`productos_por_pedir`). Semana 6: revisión de código y seguridad. Semana 7: suite de pruebas con técnicas formales (`validar_minimo`, `cajas_vigentes` y `productos_por_pedir`).
+Funcionalidad: HU-05 Productos bajo el mínimo (`productos_por_pedir`). Semana 6: revisión de código y seguridad. Semana 7: suite de pruebas con técnicas formales (`validar_minimo`, `cajas_vigentes` y `productos_por_pedir`). Semanas 8 y 9: aceptación, defecto D-01, pipeline y contenedor.
 Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de clase; Gemini (chat) para explicar y revisar el código de clase; Claude (chat) para la implementación y el refactor del proyecto. En la semana 6, Claude como revisor (chat) y como agente en la rama `agente/revision-semana6`. En la semana 7, Claude para proponer casos, escribir el borrador de las pruebas y generar los datos sintéticos, en la rama `semana7/suite-pruebas`.
 
 > Parto del taller de clase, como lo permite la tarea: allí Copilot escribió las pruebas y la
@@ -172,12 +172,41 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Verificación:** commit en rojo con 25 pruebas nuevas que fallaban (`NotImplementedError`); con la implementación, `python -m pytest`: 118 passed y `tests/` sin cambios entre los dos commits. `ruff check --select E,F,B,S .`: All checks passed! Abrí las dos pantallas con los datos del documento de requisitos: «Por pedir» muestra ibuprofeno 2 de 5, acetaminofén 3 de 10 y amoxicilina 8 de 10 (igual que `python -m app`), y al cambiar el mínimo del ibuprofeno a −2 sale el mensaje del escenario 2 y el mínimo sigue en 5.
 - **Commit relacionado:** `e8ddb3e` (en rojo) y `2b6b82f` (en verde).
 
+## Semanas 8 y 9: aceptación, defectos, pipeline y contenedor
+
+### Entrada 18
+
+- **Fecha:** 2026-11-27
+- **Prompt o sugerencia:** Claude, con acceso al repositorio: «Revisa qué le falta al proyecto para la entrega final según la tarea de la semana 10 y las prácticas de las semanas 8 y 9. Busca defectos probando los formularios con valores fuera de lo normal.» Encontró que un número de 20 cifras en cualquier formulario daba error 500 (`OverflowError` de SQLite) y propuso la prueba en rojo, la corrección y el reporte D-01.
+- **Decisión:** Aceptada con cambios
+- **Por qué:** El defecto es real: lo reproduje con los 4 formularios. La corrección va en la capa de datos (`_exigir_rango`) y no en `app/reglas/`, porque el límite viene de SQLite y no de HU-05, y yo no quiero meter en las reglas algo que el cliente no pidió. El borrador del reporte marcaba «No usé IA para redactar los pasos»; lo corregí porque no era cierto.
+- **Verificación:** Prueba parametrizada en rojo (4 fallos, `9d86a6a`) y en verde con la corrección (`9776ce7`). `python -m pytest`: 122 passed; ruff sin avisos; `git diff 9d86a6a 9776ce7 -- tests` vacío.
+- **Commit relacionado:** `9d86a6a`, `9776ce7` y el reporte en `docs/defectos/D-01.md`, en la rama `semana8/aceptacion-defectos`.
+
+### Entrada 19
+
+- **Fecha:** 2026-11-27
+- **Prompt o sugerencia:** Claude: «Escribe el pipeline de GitHub Actions y el Dockerfile para este proyecto. Contexto: ADR-001 (Flask + SQLite, aplicación local), rama `main`, Python 3.10 a 3.13, `requirements.txt` con versiones fijadas. Restricciones: la lista de revisión de la semana 9 (permisos mínimos, sin secretos en archivos, versiones fijadas, usuario sin privilegios, `.dockerignore`, sin modo debug) y que un fallo de las pruebas haga fallar el pipeline.»
+- **Decisión:** Aceptada con cambios
+- **Por qué:** Revisé los dos archivos con la lista de la semana 9 (tabla en `docs/revision_configuracion.md`). Al revisarlos apareció que `requirements.txt` mezclaba Flask con pytest y ruff, así que se separó `requirements-dev.txt`. La base SQLite se movió a un volumen para no perderla al borrar el contenedor. Acepté el servidor de desarrollo de Flask solo porque ADR-001 dice aplicación local, y lo dejé como pendiente.
+- **Verificación:** En local: 122 passed, ruff sin avisos y el YAML se lee sin errores. Docker no se pudo construir en local (sin acceso a internet para bajar la imagen base); la construcción y el `curl` de prueba los hace el job `imagen` del pipeline. El resultado queda en la pestaña Actions del repositorio.
+- **Commit relacionado:** `8896e0f`, `8d39e98` y `db7bc1f`, en la rama `semana9/pipeline-docker` (sale de `semana8/aceptacion-defectos`).
+
+### Entrada 20
+
+- **Fecha:** 2026-11-27
+- **Prompt o sugerencia:** Claude, para la entrega final: borrador de la guía de despliegue, el plan de operación, la tabla de criterios de aceptación, el informe final a partir de la plantilla `informe_final_integrador.md` y las diapositivas, con la condición de usar solo evidencias que ya estuvieran en el repositorio y en esta bitácora.
+- **Decisión:** Aceptada con cambios
+- **Por qué:** La tarea permite usar IA para la redacción y para organizar las diapositivas. Cada caso de la sección 4 del informe sale de una entrada de esta bitácora y tiene su commit. Las filas de los módulos 1 a 3 las completo yo, porque esa parte no estaba en la bitácora.
+- **Verificación:** Cada hash de commit citado en el informe existe en `git log`, y cada enlace apunta a un archivo del repositorio.
+- **Commit relacionado:** el de esta entrada y el del informe final, en la rama `semana10/entrega-final`.
+
 ## Resumen
 
 | Decisión | Cantidad |
 |---|---|
 | Aceptadas | 5 (entradas 4, 5, 7, 9 y 14) |
-| Aceptadas con cambios | 9 (entradas 3, 6, 8, 10, 12, 13, 15, 16 y 17) |
+| Aceptadas con cambios | 12 (entradas 3, 6, 8, 10, 12, 13, 15, 16, 17, 18, 19 y 20) |
 | Rechazadas | 3 (entradas 1, 2 y 11) |
 
 ## Errores que atraparon las pruebas

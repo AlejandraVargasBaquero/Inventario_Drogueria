@@ -1,12 +1,17 @@
 # Sistema de inventario de la Droguería San Rafael
 
+![CI](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/actions/workflows/ci.yml/badge.svg)
+
+> **Entrega final:** [informe final](informe_final.md) ([PDF](docs/informe_final.pdf)) ·
+> [bitácora de IA](bitacora_ia.md) · [documentos por módulo](docs/README.md)
+
 ## 1. Qué es
 
-Sistema de inventario para una droguería de barrio en Neiva, con control de lotes y
-fechas de vencimiento. Le avisa al dueño qué medicamentos están por debajo del mínimo
-contando solo las cajas de lotes que no han vencido. Proyecto final del Seminario de
-Inteligencia Artificial Aplicada al Ciclo de Vida del Software (FET, 2026). Los nombres
-del cliente y del negocio son ficticios.
+Sistema de inventario para la Droguería San Rafael, una droguería de barrio en Neiva,
+con control de lotes y fechas de vencimiento. Le avisa a su dueño, don Rodrigo Cuéllar,
+qué medicamentos están por debajo del mínimo contando solo las cajas de lotes que no han
+vencido. Proyecto final del Seminario de Inteligencia Artificial Aplicada al Ciclo de
+Vida del Software (FET, 2026). Los datos de prueba del repositorio son sintéticos.
 
 Documentos base: requisitos (semana 3) y diseño (semana 4, ADR-001 y ADR-002).
 Funcionalidad implementada: HU-05 «Productos bajo el mínimo» (ver la sección 9).
@@ -15,8 +20,9 @@ Funcionalidad implementada: HU-05 «Productos bajo el mínimo» (ver la sección
 
 - Python 3.10 o superior (desarrollado con Python 3.13).
 - Git.
-- Dependencias con versión fijada en `requirements.txt`: `Flask==3.1.3` (capa web),
-  `pytest==9.1.1` (pruebas) y `ruff==0.16.9` (linter). Flask instala también Werkzeug,
+- Dependencias con versión fijada: `requirements.txt` solo tiene lo que la aplicación
+  necesita para ejecutarse (`Flask==3.1.3`); `requirements-dev.txt` agrega `pytest==9.1.1`,
+  `pytest-cov==7.1.0` y `ruff==0.16.9` para las pruebas y el linter. Flask instala también Werkzeug,
   Jinja2, itsdangerous, click, blinker y MarkupSafe. Las capas de reglas y de datos solo
   usan la librería estándar (`sqlite3`), como pide el ADR-001.
 
@@ -28,7 +34,7 @@ cd Inventario_Drogueria
 python -m venv .venv
 .venv\Scripts\activate          # Windows (PowerShell)
 # source .venv/bin/activate       # Linux o macOS
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt   # o requirements.txt si solo vas a usarla
 ```
 
 Copia `.env.example` como `.env` y pon tu propia `SECRET_KEY` (el comando para generarla
@@ -72,10 +78,15 @@ Productos por pedir al 24/10/2026:
 ## 5. Pruebas y calidad
 
 ```bash
-python -m pytest -v                          # resultado esperado: 118 passed
+python -m pytest -v                          # resultado esperado: 122 passed
 python -m ruff check --select E,F,B,S .      # resultado esperado: All checks passed!
 pip-audit -r requirements.txt                # auditoría de dependencias
 ```
+
+El pipeline de GitHub Actions ([ci.yml](.github/workflows/ci.yml)) corre en cada push y
+pull request a `main`: ruff, las pruebas en Python 3.10 y 3.13, cobertura de ramas ≥ 90 %
+en `app.reglas` y `app.datos`, y construye la imagen Docker y comprueba que responde.
+Para ejecutarlo con Docker, ver la [guía de despliegue](docs/guia_despliegue.md).
 
 La configuración de ruff está en `pyproject.toml`. El informe de la revisión de código y
 seguridad de la semana 6 está en [revision_seguridad.md](revision_seguridad.md). Las tablas
@@ -118,14 +129,26 @@ inventario-drogueria/
 │   ├── test_datos_sinteticos.py # Pruebas con los datos sintéticos (semana 7)
 │   ├── test_repositorio.py    # Capa de datos con SQLite (backend)
 │   └── test_pantallas.py      # Capa web con Flask (frontend)
-├── docs/evidencias/           # Capturas de la revisión de la semana 6
+├── docs/
+│   ├── README.md              # Índice de documentos por módulo
+│   ├── criterios_aceptacion.md # Criterios de HU-05 y sus pruebas (semana 8)
+│   ├── defectos/D-01.md       # Reporte de defecto (semana 8)
+│   ├── revision_configuracion.md # Revisión del pipeline y del Dockerfile (semana 9)
+│   ├── guia_despliegue.md     # Instalación local y con Docker
+│   ├── plan_operacion.md      # Vigilancia, copias de seguridad y mantenimiento
+│   └── evidencias/            # Capturas
+├── .github/workflows/ci.yml   # Pipeline de integración continua
+├── Dockerfile                 # Imagen de la aplicación (usuario sin privilegios)
+├── .dockerignore
+├── informe_final.md           # Informe final del proyecto integrador
 ├── .env.example               # Plantilla de variables de entorno (sin valores reales)
 ├── bitacora_ia.md             # Bitácora de uso de IA
 ├── registro_pruebas.md        # Tablas de casos y revisión de las pruebas (semana 7)
 ├── revision_seguridad.md      # Informe de revisión de código y seguridad
 ├── pyproject.toml             # Configuración de ruff
 ├── pytest.ini
-├── requirements.txt
+├── requirements.txt           # Dependencias de ejecución
+├── requirements-dev.txt       # Pruebas y linter
 └── README.md
 ```
 
@@ -138,6 +161,9 @@ trabajó como agente en la rama `agente/revision-semana6` y yo revisé el diff a
 integrarlo a `main`. En la semana 7, Claude propuso los casos, escribió el borrador
 de las pruebas y los datos sintéticos en la rama `semana7/suite-pruebas`; el borrador
 quedó en su propio commit y mi revisión en el siguiente (ver `registro_pruebas.md`).
+En las semanas 8 y 9, Claude encontró el defecto D-01 y escribió el borrador del pipeline,
+el Dockerfile y los documentos de operación; la revisión de cada uno está en las entradas
+18 a 20 de la bitácora y en `docs/revision_configuracion.md`.
 
 ## 8. Autora y licencia
 
