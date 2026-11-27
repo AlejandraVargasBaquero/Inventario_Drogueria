@@ -201,12 +201,21 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Verificación:** Cada hash de commit citado en el informe existe en `git log`, y cada enlace apunta a un archivo del repositorio.
 - **Commit relacionado:** el de esta entrada y el del informe final, en la rama `semana10/entrega-final`.
 
+### Entrada 21
+
+- **Fecha:** 2026-11-27
+- **Prompt o sugerencia:** Claude, en la rama `semana10/editar-eliminar`: «Agrega a la pantalla de inventario editar las cajas de un lote y eliminar lotes y medicamentos. Pruebas primero (capa de datos y web, incluidos límites, errores y abuso sin token) y después la implementación. Restricciones: consultas con `?`, reutilizar `validar_cantidad` y `_exigir_rango`, no modificar las pruebas existentes.»
+- **Decisión:** Aceptada con cambios
+- **Por qué:** Al eliminar un medicamento se borran también sus lotes en una sola transacción, para que no queden lotes huérfanos. La primera versión del botón Eliminar ponía el nombre del medicamento dentro del `confirm()` de JavaScript. El autoescape de Jinja2 no protege dentro de JavaScript, así que un nombre con un apóstrofo habría podido ejecutar código (XSS, pendiente de la semana 6). Se cambió por un mensaje fijo.
+- **Verificación:** El commit en rojo no cargaba (las funciones no existían). Con la implementación, `python -m pytest`: 145 passed (23 nuevas) y `git diff` entre los dos commits no toca `tests/`. `ruff check --select E,F,B,S .`: All checks passed! Abrí la pantalla y probé cambiar las cajas del L-0627 a 2.
+- **Commit relacionado:** `5dcdc56` (en rojo) y `e575230` (en verde).
+
 ## Resumen
 
 | Decisión | Cantidad |
 |---|---|
 | Aceptadas | 5 (entradas 4, 5, 7, 9 y 14) |
-| Aceptadas con cambios | 12 (entradas 3, 6, 8, 10, 12, 13, 15, 16, 17, 18, 19 y 20) |
+| Aceptadas con cambios | 13 (entradas 3, 6, 8, 10, 12, 13, 15, 16, 17, 18, 19, 20 y 21) |
 | Rechazadas | 3 (entradas 1, 2 y 11) |
 
 ## Errores que atraparon las pruebas

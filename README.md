@@ -78,7 +78,7 @@ Productos por pedir al 24/10/2026:
 ## 5. Pruebas y calidad
 
 ```bash
-python -m pytest -v                          # resultado esperado: 122 passed
+python -m pytest -v                          # resultado esperado: 145 passed
 python -m ruff check --select E,F,B,S .      # resultado esperado: All checks passed!
 pip-audit -r requirements.txt                # auditoría de dependencias
 ```
@@ -182,6 +182,9 @@ el Dockerfile y los documentos de operación; la revisión de cada uno está en 
 | `/medicamentos` | POST | Registra un medicamento (nombre y mínimo) |
 | `/medicamentos/<id>/minimo` | POST | Cambia el mínimo (HU-05, escenario 2: si es −2 no se guarda y sale el mensaje) |
 | `/lotes` | POST | Registra un lote (medicamento, número, fecha de vencimiento y cajas) |
+| `/lotes/cantidad` | POST | Cambia las cajas de un lote (después de vender o de contar) |
+| `/lotes/eliminar` | POST | Elimina un lote (pide confirmación) |
+| `/medicamentos/<id>/eliminar` | POST | Elimina un medicamento y todos sus lotes (pide confirmación) |
 
 Decisiones:
 

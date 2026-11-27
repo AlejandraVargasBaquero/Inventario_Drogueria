@@ -7,7 +7,7 @@ Fecha: 2026-11-27
 
 ## 1. Resumen
 
-Don Rodrigo Cuéllar, dueño de la Droguería San Rafael en Neiva, lleva el inventario en Excel y no sabe cuántas de sus cajas ya están vencidas. Por eso pide tarde los medicamentos que se están acabando. El sistema registra medicamentos y lotes con su fecha de vencimiento y muestra la lista «Por pedir» (HU-05): los medicamentos con menos cajas vigentes que el mínimo que el dueño define. Es una aplicación local en tres capas (Flask, reglas en Python puro y SQLite), con 122 pruebas, linter, pipeline de GitHub Actions y contenedor Docker. Usé IA (GitHub Copilot, Gemini y Claude) en las seis fases. Cada uso quedó en la [bitácora](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/bitacora_ia.md) (20 entradas: 5 aceptadas, 12 aceptadas con cambios y 3 rechazadas). El resultado principal de la verificación: el código de clase hecho con IA *parecía* correcto, pero contaba como vigentes las cajas vencidas. Lo atraparon las pruebas escritas desde la historia de usuario, no la lectura del código.
+Don Rodrigo Cuéllar, dueño de la Droguería San Rafael en Neiva, lleva el inventario en Excel y no sabe cuántas de sus cajas ya están vencidas. Por eso pide tarde los medicamentos que se están acabando. El sistema registra medicamentos y lotes con su fecha de vencimiento y muestra la lista «Por pedir» (HU-05): los medicamentos con menos cajas vigentes que el mínimo que el dueño define. Es una aplicación local en tres capas (Flask, reglas en Python puro y SQLite), con 145 pruebas, linter, pipeline de GitHub Actions y contenedor Docker. Usé IA (GitHub Copilot, Gemini y Claude) en las seis fases. Cada uso quedó en la [bitácora](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/bitacora_ia.md) (21 entradas: 5 aceptadas, 13 aceptadas con cambios y 3 rechazadas). El resultado principal de la verificación: el código de clase hecho con IA *parecía* correcto, pero contaba como vigentes las cajas vencidas. Lo atraparon las pruebas escritas desde la historia de usuario, no la lectura del código.
 
 ## 2. Problema y usuario
 
@@ -101,9 +101,9 @@ Figura 5. La misma prueba en verde después de la corrección (commit `9776ce7`)
 ## 5. Estado final del sistema
 
 - Arquitectura: aplicación local en tres capas según el ADR-001. La interfaz es Flask (`app/web`) y solo convierte texto y muestra mensajes. Las reglas están en Python puro (`app/reglas`) y se prueban solas. Los datos van en SQLite con consultas parametrizadas (`app/datos`). Se despliega con Python o Docker ([guía de despliegue](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/docs/guia_despliegue.md)). La decisión de las capas está en el ADR-001, resumido en la [sección 6 del README](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/README.md#6-estructura).
-- Funcionalidades terminadas: HU-05 «Productos bajo el mínimo» (Must), terminada, con sus dos escenarios automatizados. Registro de medicamentos, cambio del mínimo y registro de lotes, con la pantalla de inventario que marca lotes vencidos y vigentes.
-- Pruebas: 122 pruebas (reglas, datos, web, aceptación, abuso y datos sintéticos con 5.000 lotes). El pipeline exige cobertura de ramas ≥ 90 % en `app.reglas` y `app.datos`. En la medición local, las pruebas recorren el 100 % de las líneas de esas dos capas. Última ejecución del pipeline: [GitHub Actions](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/actions).
-- Pendientes: de la propuesta faltan descontar las ventas del lote que vence primero, la alerta de vencimientos a 30 días y la revisión con una muestra de 50 medicamentos; dar de baja lotes vencidos (HU-06); usuarios y roles (hoy la aplicación es local, de un solo usuario); servidor de producción (gunicorn) si se publica; preguntas P-12 (¿igual al mínimo ya se pide?) y A-6 (¿nombre obligatorio?) para el cliente.
+- Funcionalidades terminadas: HU-05 «Productos bajo el mínimo» (Must), terminada, con sus dos escenarios automatizados. Registro de medicamentos, cambio del mínimo y registro de lotes, con la pantalla de inventario que marca lotes vencidos y vigentes. Además se puede cambiar las cajas de un lote y eliminar lotes y medicamentos (con confirmación y token CSRF), commits [`5dcdc56`](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/commit/5dcdc56) (en rojo) y [`e575230`](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/commit/e575230) (en verde).
+- Pruebas: 145 pruebas (reglas, datos, web, aceptación, abuso y datos sintéticos con 5.000 lotes). El pipeline exige cobertura de ramas ≥ 90 % en `app.reglas` y `app.datos`. En la medición local, las pruebas recorren el 100 % de las líneas de esas dos capas. Última ejecución del pipeline: [GitHub Actions](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/actions).
+- Pendientes: de la propuesta faltan descontar las ventas del lote que vence primero, la alerta de vencimientos a 30 días y la revisión con una muestra de 50 medicamentos; dar de baja automáticamente los lotes vencidos (HU-06; hoy se eliminan a mano); usuarios y roles (hoy la aplicación es local, de un solo usuario); servidor de producción (gunicorn) si se publica; preguntas P-12 (¿igual al mínimo ya se pide?) y A-6 (¿nombre obligatorio?) para el cliente.
 
 ## 6. Reflexión ética y legal
 
@@ -145,7 +145,7 @@ Figura 7. Escenario 2 de HU-05: al cambiar el mínimo a −2 no se guarda y apar
 
 ![](docs/evidencias/E04_pytest_ruff_final.png){width=15cm}
 
-Figura 8. Estado final: 122 pruebas en verde y ruff sin avisos.
+Figura 8. Estado final: 145 pruebas en verde y ruff sin avisos.
 
 ![](docs/evidencias/E05_ramas_git_log.png){width=15cm}
 
