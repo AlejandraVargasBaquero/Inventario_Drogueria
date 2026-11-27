@@ -54,6 +54,14 @@ Evidencias: [propuesta](https://github.com/AlejandraVargasBaquero/Inventario_Dro
 - Cómo lo detectaste: llamé a la función con `True`, `"10"`, `2.5` y `None` en pruebas parametrizadas escritas antes de la corrección (en rojo). Los falsos positivos los descarté con la documentación de `sorted` y la prueba de empate.
 - Qué hiciste: creé `es_entero`, que excluye `bool`, con sus pruebas. Commit [`ead80c7`](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/commit/ead80c7). Bitácora, entradas 8 y 10.
 
+![](docs/evidencias/C01_ruff_antes.png){width=15cm}
+
+Figura 1. Ruff antes de configurarlo: los avisos S101 en las pruebas, que la IA marcó como problema y eran falsos positivos.
+
+![](docs/evidencias/C02_env_example_ignorado.png){width=15cm}
+
+Figura 2. `git check-ignore` muestra que `.gitignore` ignoraba `.env.example`, algo que la revisión con IA no vio (H-01).
+
 ### Caso 4: pruebas de la IA que pasaban con el código roto (pruebas)
 
 - Fase: pruebas.
@@ -69,6 +77,26 @@ Evidencias: [propuesta](https://github.com/AlejandraVargasBaquero/Inventario_Dro
 - Qué estaba mal: el ADR-001 pide la menor cantidad de dependencias (Flask y la librería estándar). Una dependencia más es otro paquete que auditar. Con los requisitos mezclados, la imagen Docker habría llevado herramientas de desarrollo.
 - Cómo lo detectaste: revisé el diff contra el ADR-001 y el Dockerfile con la lista de la semana 9.
 - Qué hiciste: cambié `python-dotenv` por una función de 10 líneas (`_cargar_env`), commit [`2b6b82f`](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/commit/2b6b82f). Separé `requirements-dev.txt`, commit [`8896e0f`](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/commit/8896e0f). Bitácora, entradas 17 y 19.
+
+### Caso 6: el código del agente daba error 500 con un número enorme (pruebas de aceptación)
+
+- Fase: pruebas (aceptación y defectos, semana 8).
+- Qué propuso la IA: la capa de datos que escribió el agente en la rama `backend/capa-datos` (bitácora, entrada 16, commit [`6d5ea55`](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/commit/6d5ea55)). Validaba que el mínimo y la cantidad fueran enteros ≥ 0, pero no su tamaño.
+- Qué estaba mal: un INTEGER de SQLite tiene 8 bytes. Con un mínimo de 20 cifras, `sqlite3` lanza `OverflowError`, que no es `ValueError`, y el dueño ve «500 Internal Server Error» (figura 3).
+- Cómo lo detectaste: probando los formularios con valores fuera de toda partición razonable. Primero escribí la prueba de los 4 formularios, que falló (figura 4).
+- Qué hiciste: agregué `_exigir_rango` en la capa de datos: ahora se muestra «El número es demasiado grande para guardarlo» y no se guarda nada (figura 5). Commits [`9d86a6a`](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/commit/9d86a6a) (en rojo) y [`9776ce7`](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/commit/9776ce7) (en verde). Reporte en [docs/defectos/D-01.md](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/docs/defectos/D-01.md). Bitácora, entrada 18.
+
+![](docs/evidencias/E01_d01_error_500.png){width=15cm}
+
+Figura 3. Reproducción del defecto D-01 antes de la corrección (commit `839731f`).
+
+![](docs/evidencias/E02_d01_prueba_en_rojo.png){width=15cm}
+
+Figura 4. La prueba del D-01 en rojo (commit `9d86a6a`).
+
+![](docs/evidencias/E03_d01_prueba_en_verde.png){width=15cm}
+
+Figura 5. La misma prueba en verde después de la corrección (commit `9776ce7`).
 
 ## 5. Estado final del sistema
 
@@ -104,3 +132,38 @@ Lo que haría distinto: escribir los casos límite que salen de la historia («v
 - Revisión de código y seguridad: [revision_seguridad.md](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/revision_seguridad.md)
 - Registro de pruebas: [registro_pruebas.md](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/registro_pruebas.md)
 - Pipeline: [GitHub Actions](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/actions)
+
+### Anexo A. Capturas del sistema y del proceso
+
+![](docs/evidencias/W01_por_pedir.png){width=12cm}
+
+Figura 6. Pantalla «Por pedir» con los datos del documento de requisitos: ibuprofeno 2 de 5, acetaminofén 3 de 10 y amoxicilina 8 de 10.
+
+![](docs/evidencias/W02_inventario_escenario2.png){width=12cm}
+
+Figura 7. Escenario 2 de HU-05: al cambiar el mínimo a −2 no se guarda y aparece el mensaje. El lote L-0925 se marca como vencido.
+
+![](docs/evidencias/E04_pytest_ruff_final.png){width=15cm}
+
+Figura 8. Estado final: 122 pruebas en verde y ruff sin avisos.
+
+![](docs/evidencias/E05_ramas_git_log.png){width=15cm}
+
+Figura 9. Historial final: una rama por semana (8, 9 y 10), cada una sale de la anterior.
+
+![](docs/evidencias/C03_diff_agente.png){width=15cm}
+
+Figura 10. Revisión del diff del agente de la semana 6 antes de integrarlo a `main`.
+
+![](docs/evidencias/C04_pytest_despues.png){width=15cm}
+
+Figura 11. Pruebas después de las correcciones de la semana 6.
+
+![](docs/evidencias/C05_pip_audit.png){width=15cm}
+
+Figura 12. pip-audit sin vulnerabilidades conocidas.
+
+![](docs/evidencias/C07_carpeta_limpia.png){width=15cm}
+
+Figura 13. Clonación en una carpeta limpia: instalación, demostración y pruebas desde cero.
+
