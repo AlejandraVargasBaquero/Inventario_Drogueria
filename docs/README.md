@@ -2,7 +2,7 @@
 
 | Módulo | Documento | Archivo |
 |---|---|---|
-| 1. Fundamentos | Propuesta del proyecto | [AGREGAR: `docs/modulo1_propuesta.pdf`] |
+| 1. Fundamentos | Propuesta del proyecto y banco de prompts | [propuesta.pdf](propuesta.pdf) |
 | 2. Requisitos | Documento de requisitos (HU-01 a HU-0x, entrevista, necesidades N-xx, RNF) | [AGREGAR: `docs/modulo2_requisitos.pdf`] |
 | 3. Diseño | Diseño, modelo de datos y ADR-001 / ADR-002 | [AGREGAR: `docs/modulo3_diseno_adr.pdf`] |
 | 4. Código | Contrato e implementación de HU-05 | [README, sección 9](../README.md#9-funcionalidades) |
