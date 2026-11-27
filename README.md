@@ -7,11 +7,11 @@
 
 ## 1. Qué es
 
-Sistema de inventario para una droguería de barrio en Neiva, con control de lotes y
-fechas de vencimiento. Le avisa al dueño qué medicamentos están por debajo del mínimo
-contando solo las cajas de lotes que no han vencido. Proyecto final del Seminario de
-Inteligencia Artificial Aplicada al Ciclo de Vida del Software (FET, 2026). Los nombres
-del cliente y del negocio son ficticios.
+Sistema de inventario para la Droguería San Rafael, una droguería de barrio en Neiva,
+con control de lotes y fechas de vencimiento. Le avisa a su dueño, don Rodrigo Cuéllar,
+qué medicamentos están por debajo del mínimo contando solo las cajas de lotes que no han
+vencido. Proyecto final del Seminario de Inteligencia Artificial Aplicada al Ciclo de
+Vida del Software (FET, 2026). Los datos de prueba del repositorio son sintéticos.
 
 Documentos base: requisitos (semana 3) y diseño (semana 4, ADR-001 y ADR-002).
 Funcionalidad implementada: HU-05 «Productos bajo el mínimo» (ver la sección 9).

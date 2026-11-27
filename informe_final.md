@@ -7,11 +7,11 @@ Fecha: 2026-11-27
 
 ## 1. Resumen
 
-El dueño de una droguería de barrio en Neiva lleva el inventario en Excel y no sabe cuántas de sus cajas ya están vencidas. Por eso pide tarde los medicamentos que se están acabando. El sistema registra medicamentos y lotes con su fecha de vencimiento y muestra la lista «Por pedir» (HU-05): los medicamentos con menos cajas vigentes que el mínimo que el dueño define. Es una aplicación local en tres capas (Flask, reglas en Python puro y SQLite), con 122 pruebas, linter, pipeline de GitHub Actions y contenedor Docker. Usé IA (GitHub Copilot, Gemini y Claude) en las seis fases. Cada uso quedó en la [bitácora](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/bitacora_ia.md) (20 entradas: 5 aceptadas, 12 aceptadas con cambios y 3 rechazadas). El resultado principal de la verificación: el código de clase hecho con IA *parecía* correcto, pero contaba como vigentes las cajas vencidas. Lo atraparon las pruebas escritas desde la historia de usuario, no la lectura del código.
+Don Rodrigo Cuéllar, dueño de la Droguería San Rafael en Neiva, lleva el inventario en Excel y no sabe cuántas de sus cajas ya están vencidas. Por eso pide tarde los medicamentos que se están acabando. El sistema registra medicamentos y lotes con su fecha de vencimiento y muestra la lista «Por pedir» (HU-05): los medicamentos con menos cajas vigentes que el mínimo que el dueño define. Es una aplicación local en tres capas (Flask, reglas en Python puro y SQLite), con 122 pruebas, linter, pipeline de GitHub Actions y contenedor Docker. Usé IA (GitHub Copilot, Gemini y Claude) en las seis fases. Cada uso quedó en la [bitácora](https://github.com/AlejandraVargasBaquero/Inventario_Drogueria/blob/main/bitacora_ia.md) (20 entradas: 5 aceptadas, 12 aceptadas con cambios y 3 rechazadas). El resultado principal de la verificación: el código de clase hecho con IA *parecía* correcto, pero contaba como vigentes las cajas vencidas. Lo atraparon las pruebas escritas desde la historia de usuario, no la lectura del código.
 
 ## 2. Problema y usuario
 
-Usuario: el dueño de la droguería, que atiende el mostrador y hace los pedidos al distribuidor.
+Usuario: don Rodrigo Cuéllar, dueño de la Droguería San Rafael, que atiende el mostrador y hace los pedidos al distribuidor.
 Cómo lo resolvía antes: una hoja de Excel con el total de cajas por medicamento, sin separar lotes. En la entrevista dijo: «En el Excel me salen 30 cajas de acetaminofén, pero no sé cuántas de esas ya están vencidas» y «Del lote nuevo solo quedaban tres cajas y nadie había hecho el pedido» (necesidad N-05).
 Qué necesita: saber, sin hacer cuentas, qué pedir hoy, contando solo cajas que se pueden vender.
 
