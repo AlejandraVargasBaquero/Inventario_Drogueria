@@ -181,7 +181,7 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Decisión:** Aceptada con cambios
 - **Por qué:** El defecto es real: lo reproduje con los 4 formularios. La corrección va en la capa de datos (`_exigir_rango`) y no en `app/reglas/`, porque el límite viene de SQLite y no de HU-05, y yo no quiero meter en las reglas algo que el cliente no pidió. El borrador del reporte marcaba «No usé IA para redactar los pasos»; lo corregí porque no era cierto.
 - **Verificación:** Prueba parametrizada en rojo (4 fallos, `9d86a6a`) y en verde con la corrección (`9776ce7`). `python -m pytest`: 122 passed; ruff sin avisos; `git diff 9d86a6a 9776ce7 -- tests` vacío.
-- **Commit relacionado:** `9d86a6a`, `9776ce7` y el reporte en `docs/defectos/D-01.md`.
+- **Commit relacionado:** `9d86a6a`, `9776ce7` y el reporte en `docs/defectos/D-01.md`, en la rama `semana8/aceptacion-defectos`.
 
 ### Entrada 19
 
@@ -190,7 +190,7 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Decisión:** Aceptada con cambios
 - **Por qué:** Revisé los dos archivos con la lista de la semana 9 (tabla en `docs/revision_configuracion.md`). Al revisarlos apareció que `requirements.txt` mezclaba Flask con pytest y ruff, así que se separó `requirements-dev.txt`. La base SQLite se movió a un volumen para no perderla al borrar el contenedor. Acepté el servidor de desarrollo de Flask solo porque ADR-001 dice aplicación local, y lo dejé como pendiente.
 - **Verificación:** En local: 122 passed, ruff sin avisos y el YAML se lee sin errores. Docker no se pudo construir en local (sin acceso a internet para bajar la imagen base); la construcción y el `curl` de prueba los hace el job `imagen` del pipeline. [COMPLETAR: enlace a la ejecución en verde y resultado de hacer fallar una prueba a propósito.]
-- **Commit relacionado:** `8896e0f`, `8d39e98` y `db7bc1f`.
+- **Commit relacionado:** `8896e0f`, `8d39e98` y `db7bc1f`, en la rama `semana9/pipeline-docker` (sale de `semana8/aceptacion-defectos`).
 
 ### Entrada 20
 
@@ -199,7 +199,7 @@ Asistente usado: GitHub Copilot (chat en VS Code, modo agente) en el taller de c
 - **Decisión:** Aceptada con cambios
 - **Por qué:** La tarea permite usar IA para la redacción y para organizar las diapositivas. Cada caso de la sección 4 del informe sale de una entrada de esta bitácora y tiene su commit. Las filas de los módulos 1 a 3 las completo yo, porque esa parte no estaba en la bitácora.
 - **Verificación:** [CONFIRMAR antes de entregar] Abrí cada enlace del informe y busqué cada hash de commit en `git log`.
-- **Commit relacionado:** el de esta entrada y el del informe final.
+- **Commit relacionado:** el de esta entrada y el del informe final, en la rama `semana10/entrega-final`.
 
 ## Resumen
 
